@@ -5,15 +5,10 @@ extends Node2D
 # is occupied. 
 var board_state = [[]]
 var current_player_turn:= 'white'
+var time_string: String
 
 # Set node paths for common items
 onready var board = $Board
-onready var chat = $LowerUI/Chatbox
-onready var chat_history = $LowerUI/ChatHistory
-onready var chat_name = $LowerUI/ChatName
-onready var ip_box = $SideUI/IPEdit
-onready var host_btn = $SideUI/HostButton
-onready var join_btn = $SideUI/JoinButton
 onready var side_ui = $SideUI
 # Paths for Castling GUI
 onready var castle_gui = $LowerUI/CastlingUI
@@ -26,6 +21,7 @@ onready var wrook_L = $Board/Rook3
 onready var brook_L = $Board/Rook
 onready var wrook_R = $Board/Rook4
 onready var brook_R = $Board/Rook2
+onready var clock = $SideUI/VBoxContainer/Panel/ClockDisplay
 
 func _ready():
 	# warning-ignore:return_value_discarded
@@ -33,13 +29,18 @@ func _ready():
 	
 # Need process to check turn and when to display Castling UI
 func _process(_delta):
+	var tim = Time.get_ticks_msec()/1000
+	time_string = '%02d : %02d : %2s'
+	var mn = floor(tim/60)
+	var hr = floor(mn/60)
+	clock.text = time_string % [hr,mn,str(tim%60)]
 	
 	# if team:
 	# 	and if (!king.check) and (!king.has_moved):
 	#		and if !rook.has_moved:
 	# castle_gui.visible = true
 	# else: castle_gui.visible = false
-	pass
+
 
 func space_is_empty(tile) -> bool:
 	# This function will be called by pieces when checking
@@ -120,38 +121,6 @@ func _on_Board_tree_entered():
 	board_state[7] = [Globals.wR,Globals.wN,Globals.wB,Globals.wQ,
 					Globals.wK,Globals.wB,Globals.wN,Globals.wR]
 
-
-func _on_HostButton_pressed():
-	chat.text = ""
-	Network.host()
-	#var ip_address = IP.get_local_addresses()[1]
-	var ip_address = Network.external_ip
-	ip_box.text = ip_address
-	# Disable buttons while hosting
-	#host_btn.disabled = true
-	#join_btn.disabled = true
-	# White team is host
-
-func _on_JoinButton_pressed():
-	# Always clear Chatbox whenever pressing a button
-	chat.text = ""
-	var ip_address = ip_box.text
-	# Need a condition for server being hosted
-	if get_tree().get_network_peer():
-		Network.self_data.name = chat_name.text
-		Network.connect_to_server(ip_address)
-		chat.text = "Connected to " + ip_address
-		# Disable buttons if connected to server
-		#host_btn.disabled = true
-		#join_btn.disabled = true
-	else:
-		chat.text = "No server exists! \n Check IP and try again, or press HOST"
-	
-	# Set Join as blue team
-	#var team = get_tree().get_nodes_in_group('BlueTeam')
-	#for n in team:
-	#	var SelfID = get_tree().get_network_unique_id()
-	#	Network.set_network_master(SelfID)
 
 
 func _on_CastleLeft_pressed():
@@ -259,23 +228,3 @@ func _on_CastleRight_pressed():
 		
 		king.can_castle = false
 
-func _on_NameEdit_text_entered(new_text):
-	# This merely updates the username
-	chat_name.text = new_text
-	
-
-func _on_Chatbox_text_entered(new_text):
-	# Step 0: add text to local ChatHistory and clear Chatbox
-	var message = new_text + '\n'
-	
-	# Step 1, check that player is connected to a server
-	if get_tree().get_network_peer():
-		var id = get_tree().get_network_unique_id()
-		print(id)
-		# Step 2, send message to server/client
-		rpc("receive_chat",id,message)
-	
-	chat.text = ''
-
-remotesync func receive_chat(id,message):
-	chat_history.text += str(id) + ':' + message
