@@ -7,10 +7,16 @@ const PLAYERS = 2
 var players = { }
 var self_data = {name = ''}
 
+var white_team:= true
+
 var external_ip: String
 var upnp = UPNP.new()
 
 signal update_board(current_tile,new_tile,id)
+signal team_change
+signal blue_team_test
+signal white_team_test
+
 
 func _ready():
 # warning-ignore:return_value_discarded
@@ -67,20 +73,35 @@ func _player_disconnected(id):
 	print('Player' + str(id) + 'disconnected')
 	players.erase(id)
 
-puppet func animate_move(tile1,tile2,piece_id):
+func animate_move(tile1,tile2,piece_id):
 	# This should be called along with update_board signals
 	# After a player makes their move and updates their board locally
 	# They need to pass the turn.  This function should animate move
-	# for the other player, which is why it is puppet func
+	# for the other player. On local scene, this is only for castling
+	var pos1 = Globals.tile_2_xy(tile1)
+	var pos2 = Globals.tile_2_xy(tile2)
+	piece_id.piece.homie.x = lerp(pos1.x,pos2.x,1)
+	piece_id.current_tile = tile2
 	
-	pass
 
 remote func send_board_update(old_tile,new_tile,piece_id):
 	emit_signal("update_board",old_tile,new_tile,piece_id)
 
-puppet func pass_turn():
-	var pause = get_tree().paused
-	get_tree().paused = !pause
+func pass_turn():
+	# Test for check
+	if white_team:
+		# Get blue king tile and see if it's in check
+		emit_signal("blue_team_test")
+	else:
+		# Get white king tile and see if it's in check
+		emit_signal("white_team_test")
+	
+	# Temporarily just changes visual team indicator
+	white_team = !white_team
+	emit_signal("team_change")
+	
+
+
 
 func _connection_failure():
 	print('Connection failed!')

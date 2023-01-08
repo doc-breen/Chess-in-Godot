@@ -162,6 +162,7 @@ func _on_CastleLeft_pressed():
 	var rook: Object
 	var king_id: int
 	var rook_id: int
+# warning-ignore:unassigned_variable
 	var tiles_in_route: PoolVector2Array
 	var enemy: String
 	var okay: bool
@@ -216,6 +217,7 @@ func _on_CastleRight_pressed():
 	var rook: Object
 	var king_id: int
 	var rook_id: int
+# warning-ignore:unassigned_variable
 	var tiles_in_route: PoolVector2Array
 	var enemy: String
 	var okay: bool
