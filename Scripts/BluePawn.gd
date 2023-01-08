@@ -13,7 +13,7 @@ onready var particle_cloud = $CPUParticles2D
 
 var test_tile: Vector2 # For checking move validity
 
-signal convert_piece(tile)
+signal convert_piece(tile,team)
 
 # Set easy access to TileMap properties and game states
 onready var board = get_node('../../Board')
@@ -26,11 +26,14 @@ func _ready():
 	current_tile = homie
 	attacks.append(Vector2.ZERO)
 	attacks.append(Vector2.ZERO)
-	_find_attacks(current_tile)
+	find_attacks()
+	# warning-ignore:return_value_discarded
+	connect("convert_piece",main,"_on_Pawn_conversion")
+	
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	_find_attacks(current_tile)
+	find_attacks()
 	for t in attacks:
 		if main.space_is_enemy(t,'white'):
 			legal_tiles.append(t)
@@ -69,10 +72,10 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func _find_attacks(tile):
+func find_attacks():
 	
-	attacks[0] = Vector2(tile.x-1,tile.y+1)
-	attacks[1] = Vector2(tile.x+1,tile.y+1)
+	attacks[0] = Vector2(current_tile.x-1,current_tile.y+1)
+	attacks[1] = Vector2(current_tile.x+1,current_tile.y+1)
 
 
 func _on_Piece_is_selected():
@@ -91,8 +94,10 @@ func _on_Piece_is_dropped():
 	
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks(current_tile)
+	find_attacks()
 	# Only for pawn, check if in enemy home row to convert piece
 	if current_tile.y == 7:
-		emit_signal("convert_piece",current_tile)
+		emit_signal("convert_piece",current_tile,'blue')
+		queue_free()
+		#main.side_ui.get_node("VBoxContainer/ConversionMenu").popup()
 

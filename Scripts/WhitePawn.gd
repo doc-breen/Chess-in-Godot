@@ -11,7 +11,7 @@ var attacks = []
 var test_tile: Vector2 # For checking move validity
 
 # Pawn-only signal
-signal convert_piece(tile)
+signal convert_piece(tile,team)
 
 # Set easy access to TileMap properties and game states
 onready var board = get_node('../../Board')
@@ -28,11 +28,13 @@ func _ready():
 	current_tile = homie
 	attacks.append(Vector2.ZERO)
 	attacks.append(Vector2.ZERO)
-	_find_attacks(current_tile)
+	find_attacks()
+	# warning-ignore:return_value_discarded
+	connect("convert_piece",main,"_on_Pawn_conversion")
 
 func _get_legal_tiles():
 	legal_tiles = []
-	_find_attacks(current_tile)
+	find_attacks()
 	for tile in attacks:
 		if main.space_is_enemy(tile,'blue'):
 			legal_tiles.append(tile)
@@ -70,10 +72,10 @@ func _move_check() -> bool:
 		return false
 
 # Eventually will need this for checkTest
-func _find_attacks(tile):
+func find_attacks():
 	# Pawn only attacks diagonals
-	attacks[0] = Vector2(tile.x-1,tile.y-1)
-	attacks[1] = Vector2(tile.x+1,tile.y-1)
+	attacks[0] = Vector2(current_tile.x-1,current_tile.y-1)
+	attacks[1] = Vector2(current_tile.x+1,current_tile.y-1)
 
 func _on_Piece_is_selected():
 	light.visible = true
@@ -93,9 +95,10 @@ func _on_Piece_is_dropped():
 	
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks(current_tile)
+	find_attacks()
 	# Only for pawn, check if in enemy home row to convert
 	if current_tile.y == 0:
-		emit_signal("convert_piece",current_tile)
+		emit_signal("convert_piece",current_tile,"white")
+		queue_free()
 
 
