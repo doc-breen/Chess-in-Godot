@@ -36,6 +36,10 @@ func _ready():
 	Network.connect("update_board",self,"_on_update_board")
 # warning-ignore:return_value_discarded
 	Network.connect("team_change",self,"_on_team_change")
+	# By the time the main node readies, all other nodes should be added
+	# so that this loop to disable blue pieces ensures that white goes first
+	for p in get_tree().get_nodes_in_group("blue"):
+		p.piece.input_pickable = false
 	
 # Need process to check turn and when to display Castling UI
 func _process(_delta):
@@ -289,14 +293,23 @@ func _on_cRight_received():
 	else: cRight.visible = false
 
 func _on_team_change():
+	# If castling was possible but not done, need to hide the UI
 	castle_ui.visible = false
-	# Need this function to also lock out pieces from being moved?
+	# Need this function to also lock out pieces from being moved
 	if Network.white_team:
 		team_label.text = "    White"
 		team_label.self_modulate = Color("ffffff")
+		for p in get_tree().get_nodes_in_group("white"):
+			p.piece.input_pickable = true
+		for o in get_tree().get_nodes_in_group("blue"):
+			o.piece.input_pickable = false
 	else:
 		team_label.text = "    Blue"
 		team_label.self_modulate = Color("1f9ad6")
+		for p in get_tree().get_nodes_in_group("blue"):
+			p.piece.input_pickable = true
+		for o in get_tree().get_nodes_in_group("white"):
+			o.piece.input_pickable = false
 
 
 func _on_Pawn_conversion(tile,team):
