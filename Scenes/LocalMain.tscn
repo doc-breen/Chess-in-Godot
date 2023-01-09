@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=2]
+[gd_scene load_steps=36 format=2]
 
 [ext_resource path="res://Scenes/BluePawn.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Scenes/BlueRook.tscn" type="PackedScene" id=2]
@@ -135,8 +135,6 @@ font_data = ExtResource( 15 )
 [sub_resource type="DynamicFont" id=14]
 size = 22
 outline_size = 1
-outline_color = Color( 0.882353, 0.988235, 0.984314, 0.85098 )
-use_filter = true
 extra_spacing_top = 1
 extra_spacing_bottom = 1
 extra_spacing_char = 1
@@ -151,8 +149,26 @@ font_data = ExtResource( 15 )
 size = 22
 outline_size = 1
 outline_color = Color( 1, 0.741176, 0.690196, 0.635294 )
-use_filter = true
 font_data = ExtResource( 15 )
+
+[sub_resource type="DynamicFont" id=17]
+size = 15
+extra_spacing_char = 1
+extra_spacing_space = 4
+font_data = ExtResource( 15 )
+
+[sub_resource type="StyleBoxEmpty" id=18]
+
+[sub_resource type="StyleBoxFlat" id=19]
+bg_color = Color( 0.376471, 0, 0, 1 )
+border_width_left = 4
+border_width_top = 1
+border_width_right = 4
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id=12]
 bg_color = Color( 0.0823529, 0.0784314, 0.0784314, 1 )
@@ -218,6 +234,27 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 shadow_color = Color( 0.0862745, 0.0862745, 0.0862745, 0.6 )
 shadow_size = 1
+
+[sub_resource type="StyleBoxFlat" id=20]
+bg_color = Color( 0.0666667, 0.109804, 0.0705882, 0.976471 )
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color( 0.0431373, 0.0352941, 0.0352941, 0.796078 )
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="DynamicFont" id=21]
+size = 36
+outline_size = 2
+outline_color = Color( 0.741176, 0.168627, 0.0980392, 0.760784 )
+use_filter = true
+extra_spacing_char = 2
+extra_spacing_space = 8
+font_data = ExtResource( 15 )
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 13 )
@@ -333,47 +370,47 @@ margin_bottom = 608.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SideUI"]
 anchor_right = 1.0
-margin_left = 8.0
+margin_left = 24.0
 margin_right = -8.0
-margin_bottom = 256.0
-custom_constants/separation = 4
+margin_bottom = 512.0
+custom_constants/separation = 8
 alignment = 1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="SideUI/VBoxContainer"]
-margin_top = 56.0
-margin_right = 240.0
-margin_bottom = 76.0
+margin_top = 134.0
+margin_right = 224.0
+margin_bottom = 154.0
 custom_fonts/normal_font = SubResource( 13 )
 text = "Turn:"
 fit_content_height = true
 
-[node name="RichTextLabel2" type="RichTextLabel" parent="SideUI/VBoxContainer"]
-margin_top = 80.0
-margin_right = 240.0
-margin_bottom = 110.0
+[node name="TeamLabel" type="RichTextLabel" parent="SideUI/VBoxContainer"]
+margin_top = 162.0
+margin_right = 224.0
+margin_bottom = 192.0
 custom_fonts/normal_font = SubResource( 14 )
 text = "	White"
 fit_content_height = true
 
 [node name="ColorRect" type="ColorRect" parent="SideUI/VBoxContainer"]
-margin_top = 114.0
-margin_right = 240.0
-margin_bottom = 138.0
-rect_min_size = Vector2( 0, 24 )
+margin_top = 200.0
+margin_right = 224.0
+margin_bottom = 208.0
+rect_min_size = Vector2( 0, 8 )
 color = Color( 1, 1, 1, 0 )
 
 [node name="Label" type="Label" parent="SideUI/VBoxContainer"]
-margin_top = 142.0
-margin_right = 240.0
-margin_bottom = 164.0
+margin_top = 216.0
+margin_right = 224.0
+margin_bottom = 238.0
 custom_fonts/font = SubResource( 15 )
 text = "Game time:"
 valign = 1
 
 [node name="Panel" type="Panel" parent="SideUI/VBoxContainer"]
-margin_top = 168.0
-margin_right = 240.0
-margin_bottom = 200.0
+margin_top = 246.0
+margin_right = 224.0
+margin_bottom = 278.0
 rect_min_size = Vector2( 0, 32 )
 
 [node name="ClockDisplay" type="Label" parent="SideUI/VBoxContainer/Panel"]
@@ -384,6 +421,22 @@ text = "0:00:00"
 align = 1
 valign = 1
 
+[node name="ColorRect2" type="ColorRect" parent="SideUI/VBoxContainer"]
+margin_top = 286.0
+margin_right = 224.0
+margin_bottom = 350.0
+rect_min_size = Vector2( 0, 64 )
+color = Color( 1, 1, 1, 0 )
+
+[node name="ConcedeButton" type="Button" parent="SideUI/VBoxContainer"]
+margin_top = 358.0
+margin_right = 224.0
+margin_bottom = 378.0
+custom_fonts/font = SubResource( 17 )
+custom_styles/focus = SubResource( 18 )
+custom_styles/normal = SubResource( 19 )
+text = "Press to Concede"
+
 [node name="LowerUI" type="Control" parent="."]
 margin_top = 512.0
 margin_right = 512.0
@@ -393,17 +446,18 @@ __meta__ = {
 }
 
 [node name="CastlingUI" type="Panel" parent="LowerUI"]
+visible = false
 anchor_top = 0.167
-anchor_right = 0.984
+anchor_right = 1.0
 anchor_bottom = 0.75
 margin_left = 32.0
-margin_top = -0.0319996
-margin_right = 0.191986
+margin_top = -0.0320015
+margin_right = -24.0
 rect_min_size = Vector2( 0, 24 )
 custom_styles/panel = SubResource( 12 )
 
 [node name="CastleLeft" type="Button" parent="LowerUI/CastlingUI"]
-self_modulate = Color( 0.498039, 0.72549, 0.905882, 1 )
+visible = false
 anchor_top = 0.5
 anchor_bottom = 0.5
 margin_left = 56.0
@@ -435,7 +489,7 @@ align = 1
 valign = 1
 
 [node name="CastleRight" type="Button" parent="LowerUI/CastlingUI"]
-self_modulate = Color( 0.760784, 0.776471, 0.905882, 1 )
+visible = false
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -454,6 +508,31 @@ text = "Kingside"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="LowerUI/CastlingUI/CastleRight"]
 
+[node name="PopupDialog" type="PopupPanel" parent="."]
+visible = true
+margin_left = 128.0
+margin_top = 120.0
+margin_right = 640.0
+margin_bottom = 400.0
+custom_styles/panel = SubResource( 20 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="Label" type="Label" parent="PopupDialog"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 4.0
+margin_right = -4.0
+margin_bottom = -4.0
+custom_fonts/font = SubResource( 21 )
+text = "Team wins!"
+align = 1
+valign = 1
+
 [connection signal="tree_entered" from="Board" to="." method="_on_Board_tree_entered"]
+[connection signal="ready" from="SideUI/VBoxContainer/Panel/ClockDisplay" to="." method="_on_ClockDisplay_ready"]
+[connection signal="pressed" from="SideUI/VBoxContainer/ConcedeButton" to="." method="_on_ConcedeButton_pressed"]
 [connection signal="pressed" from="LowerUI/CastlingUI/CastleLeft" to="." method="_on_CastleLeft_pressed"]
 [connection signal="pressed" from="LowerUI/CastlingUI/CastleRight" to="." method="_on_CastleRight_pressed"]
