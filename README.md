@@ -1,7 +1,7 @@
 # Chess-in-Godot
 Building chess from the ground up in Godot engine.  No assets are in this repository.
 
-[https://www.youtube.com/watch?v=k9aj2qnCr_I](Video from before castling was implemented)
+[Video from before castling was implemented](https://www.youtube.com/watch?v=k9aj2qnCr_I)
 
 
 This project contains 3 major parts.  The first 2 parts are intended to be web uploads only, playable in a browser with a mouse or any touch-screen device.
