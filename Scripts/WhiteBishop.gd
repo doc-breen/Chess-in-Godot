@@ -12,16 +12,13 @@ onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	_find_attacks()
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks()
 
 func _get_legal_tiles():
 	
 	legal_tiles=[]
-	_find_attacks()
+	find_attacks()
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'blue'):
 			legal_tiles.append(tile)
@@ -50,7 +47,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	var diagNW
 	var diagNE
 	var diagSW
@@ -112,4 +109,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	find_attacks()

@@ -55,16 +55,14 @@ func _input(event):
 func move_piece(new_tile,piece_id):
 # Store current tile before updating the screen position to pass
 # to the update signal
-# warning-ignore:unassigned_variable
-	var current_tile: Vector2
-	current_tile.x = floor(homie.x/Globals.TILE_SIZE)
-	current_tile.y = floor(homie.y/Globals.TILE_SIZE)
+
+	var current_tile = Globals.xy_2_tile(homie)
 	# Update homie so that the lock position works
-	homie = Globals.TILE_SIZE*Vector2((2*new_tile.x +1)/2,(2*new_tile.y +1)/2)
+	homie = Globals.tile_2_xy(new_tile)
 	# capture possible pieces
 	if get_overlapping_areas():
 		emit_signal('capture',get_overlapping_areas()[0])
 	
 	# Update board_state
 	Network.send_board_update(current_tile,new_tile,piece_id)
-	
+	Network.pass_turn()

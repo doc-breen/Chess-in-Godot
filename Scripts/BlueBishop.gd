@@ -13,16 +13,21 @@ onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	_find_attacks()
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks()
 
 func _get_legal_tiles():
-	
 	legal_tiles=[]
-	_find_attacks()
+	
+	# First check if movement will put king in check
+	if main.checkCheck(current_tile,'white'):
+		# Duplicate board state
+		var test_state = main.board_state
+		# Remove this piece from test_state
+		test_state[current_tile.y][current_tile.x] = Globals.empty
+	
+	
+	find_attacks()
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'white'):
 			legal_tiles.append(tile)
@@ -38,21 +43,22 @@ func _unshow_tiles():
 	if len(tile_states) > 0:
 		for t in range(0,len(tile_states)):
 			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the legal_tiles
+	# End by clearing the tiles
 	
 	tile_states=[]
 
 func _move_check() -> bool:
-	var test_pos = get_global_mouse_position()/Globals.TILE_SIZE
-	test_tile.x = floor(test_pos.x)
-	test_tile.y = floor(test_pos.y)
+	# return false if blue king is in check or will be in check after moving
+	# If checkCheck is called during this function, will return incorrectly
+	
+	test_tile = Globals.xy_2_tile(get_global_mouse_position())
 	# See if it's green
 	if board.get_cellv(test_tile) == 6:
 		return true
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	# need to check and display x and y tiles if
 	var diagNW
 	var diagNE
@@ -93,7 +99,7 @@ func _find_attacks():
 		else:
 			attacks.append(diagSE)
 			break
-		c+=1
+		c += 1
 
 func _on_Piece_is_selected():
 	light.visible = true
@@ -110,4 +116,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	find_attacks()

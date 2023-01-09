@@ -12,38 +12,67 @@ var check = false
 onready var piece = $Piece
 onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
-var can_castle = true
+var can_castle = false
+signal cRight
+signal cLeft
+var never_checked = true
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	_find_attacks()
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks()
+	# warning-ignore:return_value_discarded
+	connect("cLeft",main,"_on_cLeft_received")
+	# warning-ignore:return_value_discarded
+	connect("cRight",main,"_on_cRight_received")
+	# warning-ignore:return_value_discarded
+	Network.connect("white_team_test",self,"_on_team_test")
 	
 
+func _process(_delta):
+	if main.checkCheck(current_tile,'blue'):
+		check = true
+		never_checked = false
+
+func castling_test():
+	# Test for castling
+	if !has_moved and never_checked:
+		if main.space_is_empty(Vector2(5,7)) and main.space_is_empty(Vector2(6,7)):
+			can_castle = true
+			emit_signal("cRight")
+		if main.space_is_empty(Vector2(3,7)) and main.space_is_empty(Vector2(2,7)) and main.space_is_empty(Vector2(1,7)):
+			can_castle = true
+			emit_signal("cLeft")
+
 func _get_legal_tiles():
-	
 	legal_tiles=[]
-	_find_attacks()
+	find_attacks()
 	for t in attacks:
 		if t.y > 7 or t.x > 7:
 			pass
 		elif !main.checkCheck(t,'blue') and !main.space_is_enemy(t,'white'):
 			legal_tiles.append(t)
 
+func _on_team_test():
+	# Use current_tile and test if it's in check
+	if main.checkCheck(current_tile,"blue"):
+		print("White King in Check!")
+	
+	
 
 func _show_tiles():
 	_get_legal_tiles()
 	for t in legal_tiles:
+		# Store actual tile state before changing it
 		tile_states.append(board.get_cellv(t))
+		# Highlight tile
 		board.set_cellv(t,6)
 
 func _unshow_tiles():
 	if len(tile_states) > 0:
+		# Change tiles back to actual state
 		for t in range(0,len(tile_states)):
 			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the legal_tiles
+	# End by clearing the tiles
 	tile_states=[]
 
 func _move_check() -> bool:
@@ -56,7 +85,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	attacks = []
 	var tileN = Vector2(current_tile.x,current_tile.y-1)
 	var tileS = Vector2(current_tile.x,current_tile.y+1)
@@ -67,8 +96,6 @@ func _find_attacks():
 	var tileSW = Vector2(current_tile.x-1,current_tile.y+1)
 	var tileSE = Vector2(current_tile.x+1,current_tile.y+1)
 	attacks = [tileN,tileS,tileW,tileE,tileNE,tileNW,tileSW,tileSE]
-	
-
 
 
 func _on_Piece_is_selected():
@@ -90,4 +117,5 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	# This last call is to update the attacks array for check checking
+	find_attacks()

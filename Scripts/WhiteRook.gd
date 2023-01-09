@@ -15,14 +15,11 @@ onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	_find_attacks()
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks()
 
 func _get_legal_tiles():
-	_find_attacks()
+	find_attacks()
 	# need to check and display x and y tiles if
 	# available.  Also rules for castling...
 	
@@ -30,10 +27,7 @@ func _get_legal_tiles():
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'blue'):
 			legal_tiles.append(tile)
-	
-	# Future section for castling checks.
-	# if !has_moved and !WhiteKing.has_moved and..?
-	
+
 
 func _show_tiles():
 	_get_legal_tiles()
@@ -42,24 +36,22 @@ func _show_tiles():
 		board.set_cellv(t,6)
 
 func _unshow_tiles():
+	# Return tiles to previous states
 	if len(tile_states) > 0:
 		for t in range(0,len(tile_states)):
 			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the legal_tiles
-	
+	# End by clearing the tiles
 	tile_states=[]
 
 func _move_check() -> bool:
-	var test_pos = get_global_mouse_position()/Globals.TILE_SIZE
-	test_tile.x = floor(test_pos.x)
-	test_tile.y = floor(test_pos.y)
+	test_tile = Globals.xy_2_tile(get_global_mouse_position())
 	# See if it's green
 	if board.get_cellv(test_tile) == 6:
 		return true
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	var tile_up
 	var tile_dn
 	var tile_lt
@@ -108,5 +100,5 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	find_attacks()
 

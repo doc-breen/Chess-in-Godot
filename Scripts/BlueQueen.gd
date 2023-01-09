@@ -1,26 +1,27 @@
 extends Node2D
 
-var legal_tiles = []
+var legal_tiles:= []
 var current_tile: Vector2
-var tile_states = []
-onready var board = get_node('../../Board')
-onready var main = get_node('/root/Main')
+var tile_states:= []
+onready var board:= get_node('../../Board')
+onready var main:= get_node('/root/Main')
 var test_tile: Vector2
-var attacks = []
-onready var piece = $Piece
-onready var light = $Light2D
-onready var particle_cloud = $CPUParticles2D
+var attacks:= []
+onready var piece:= $Piece
+onready var light:= $Light2D
+onready var particle_cloud:= $CPUParticles2D
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	_find_attacks()
+	# Though default board setup has pieces already assigned to groups,
+	# when converting a pawn, this needs to be explicitly done
+	self.add_to_group("blue")
+	
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks()
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	_find_attacks()
+	find_attacks()
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'white'):
 			legal_tiles.append(tile)
@@ -42,13 +43,16 @@ func _move_check() -> bool:
 	var test_pos = get_global_mouse_position()/Globals.TILE_SIZE
 	test_tile.x = floor(test_pos.x)
 	test_tile.y = floor(test_pos.y)
-	# See if it's green
+	# See if it's green.  This works because move_check is only called from
+	# the Piece_is_dropped method, which means the piece was previously in hand
+	# which means the show_tiles function had been called to highlight legal
+	# moves already.
 	if board.get_cellv(test_tile) == 6:
 		return true
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	attacks = []
 	var tileN
 	var tileS
@@ -146,4 +150,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	find_attacks()

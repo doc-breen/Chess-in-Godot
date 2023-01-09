@@ -311,24 +311,28 @@ func _on_team_change():
 		for o in get_tree().get_nodes_in_group("white"):
 			o.piece.input_pickable = false
 
+func _end_game(team_won):
+	# Display which team wins and stop timer?
+	$PopupDialog/Label.text = team_won + ' wins!'
+	$PopupDialog.popup()
 
-func _on_Pawn_conversion(tile,team):
+func _on_Pawn_conversion(tile,team,pawn):
 	# Temporarily just spawn a Queen because that's easy and no one picks
 	# anything else anyway so fuck the illusion of choice
 	var new_Q: Node2D
 	var p_id: int
 	if team == 'white':
-		new_Q = wqueen.new()
+		new_Q = wqueen.instance()
 		p_id = Globals.wQ
 	elif team == 'blue':
-		new_Q = bqueen.new()
+		new_Q = bqueen.instance()
 		p_id = Globals.bQ
 	var new_pos = Globals.tile_2_xy(tile)
 	new_Q.position = new_pos
 	# update board_state
 	board_state[tile.y][tile.x] = p_id
-	# Display UI to select piece to spawn in
-	#side_ui.get_node("VBoxContainer/ConversionMenu").popup()
+	pawn.queue_free()
+	board.add_child(new_Q)
 
 # This is to keep clock from having an extra 5 seconds
 func _on_ClockDisplay_ready():
@@ -353,4 +357,16 @@ func _on_ConversionMenu_index_pressed(index):
 		4:
 			# Rook
 			pass
+	
+
+
+func _on_ConcedeButton_pressed():
+	var team_won: String
+	if Network.white_team:
+		team_won = 'Blue'
+	else:
+		team_won = 'White'
+	_end_game(team_won)
+	# Disable button
+	side_ui.get_node("VBoxContainer/ConcedeButton").disabled = true
 	

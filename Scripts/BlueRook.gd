@@ -17,18 +17,17 @@ func _ready():
 	homie.x = floor(homie.x)
 	homie.y = floor(homie.y)
 	current_tile = homie
-	_find_attacks()
+	find_attacks()
 
 func _get_legal_tiles():
 	
 	legal_tiles=[]
-	_find_attacks()
+	find_attacks()
 	
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'white'):
 			legal_tiles.append(tile)
-	# Future section for castling checks.
-	# if !has_moved and king.!has_moved
+
 
 func _show_tiles():
 	_get_legal_tiles()
@@ -40,8 +39,7 @@ func _unshow_tiles():
 	if len(tile_states) > 0:
 		for t in range(0,len(tile_states)):
 			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the legal_tiles
-	
+	# End by clearing the tiles
 	tile_states=[]
 
 func _move_check() -> bool:
@@ -54,7 +52,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func _find_attacks():
+func find_attacks():
 	attacks = []
 	var tile_up
 	var tile_dn
@@ -112,5 +110,5 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	_find_attacks()
+	find_attacks()
 
