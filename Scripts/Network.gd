@@ -14,8 +14,6 @@ var upnp = UPNP.new()
 
 signal update_board(current_tile,new_tile,id)
 signal team_change
-signal blue_team_test
-signal white_team_test
 
 
 func _ready():
