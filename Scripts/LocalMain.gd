@@ -30,6 +30,7 @@ const wknight = preload("res://Scenes/WhiteKnight.tscn")
 const bknight = preload("res://Scenes/BlueKnight.tscn")
 const wrook = preload("res://Scenes/WhiteRook.tscn")
 const brook = preload("res://Scenes/BlueRook.tscn")
+var pause_time = 0
 
 func _ready():
 	# warning-ignore:return_value_discarded
@@ -44,7 +45,7 @@ func _ready():
 # Need process to check turn and when to display Castling UI
 func _process(_delta):
 	# warning-ignore:integer_division
-	var tim = Time.get_ticks_msec()/1000 - clock_start
+	var tim = Time.get_ticks_msec()/1000 - clock_start - pause_time
 	time_string = '%02d : %02d : %02d'
 	var mn = floor(tim/60)
 	var hr = floor(mn/60)
@@ -152,12 +153,16 @@ func _on_update_board(old_tile, new_tile, piece_id) -> void:
 
 func _show_castling():
 	var btn_clr: Color
+	var king
 	if Network.white_team:
 		btn_clr = Color("c2c6e7")
+		king = wking
 	else:
 		btn_clr = Color("7fb9e7")
-	castle_ui.visible = true
-	castle_ui.modulate = btn_clr
+		king = bking
+	if king.never_checked:
+		castle_ui.visible = true
+		castle_ui.modulate = btn_clr
 	
 
 func _on_Board_tree_entered():
@@ -327,9 +332,8 @@ func _on_team_change():
 	# Lock out pieces by toggling input_pickable in each piece's Piece
 	# Note: value of white_team changes immediately before this call
 	# This function is technically beginning of a turn, not end of one
-	var king
 	if Network.white_team:
-		king = wking
+		
 		team_label.text = "    White"
 		team_label.self_modulate = Color("ffffff")
 		for p in get_tree().get_nodes_in_group("white"):
@@ -337,19 +341,19 @@ func _on_team_change():
 		for o in get_tree().get_nodes_in_group("blue"):
 			o.piece.input_pickable = false
 	else:
-		king = bking
+		
 		team_label.text = "    Blue"
 		team_label.self_modulate = Color("1f9ad6")
 		for p in get_tree().get_nodes_in_group("blue"):
 			p.piece.input_pickable = true
 		for o in get_tree().get_nodes_in_group("white"):
 			o.piece.input_pickable = false
-	# If current team king is in check, alert
-	king.on_team_test()
+	# Remove previous alert
+	side_ui.get_node("VBoxContainer/CheckAlertPopup").hide()
 	
 
 func _on_CheckAlert_received():
-	side_ui.get_node("VBoxContainer/CheckAlertPopup").popup()
+	side_ui.get_node("VBoxContainer/CheckAlertPopup").popup(Rect2(512,300,256,32))
 	
 
 func _end_game(team_won):
@@ -358,6 +362,8 @@ func _end_game(team_won):
 	$EndGamePopup.popup()
 	yield(get_tree().create_timer(2),"timeout")
 	$EndGamePopup/VBoxContainer/RestartButton.visible = true
+	# Hide any potential popups
+	side_ui.get_node("VBoxContainer/CheckAlertPopup").hide()
 
 func _on_Pawn_conversion(tile,team,pawn):
 	# Temporarily just spawn a Queen because that's easy and no one picks
@@ -384,6 +390,23 @@ func _on_ClockDisplay_ready():
 
 
 func _on_ConcedeButton_pressed():
+	# Confirmation popup in case of accidental trigger
+	side_ui.get_node("ConfirmationPopup").popup(Rect2(512,300,256,32))
+	# Store engine time for purposes of resuming clock
+# warning-ignore:integer_division
+	pause_time = Time.get_ticks_msec()/1000
+
+
+func _on_RestartButton_pressed():
+	# warning-ignore:return_value_discarded
+	get_tree().reload_current_scene()
+	if !Network.white_team:
+		Network.white_team = true
+
+
+func _on_Yes_pressed():
+	get_tree().paused = false
+	side_ui.get_node("ConfirmationPopup").hide()
 	var team_won: String
 	if Network.white_team:
 		team_won = 'Blue'
@@ -392,11 +415,16 @@ func _on_ConcedeButton_pressed():
 	_end_game(team_won)
 	# Disable button
 	side_ui.get_node("VBoxContainer/ConcedeButton").disabled = true
-	
 
 
-func _on_RestartButton_pressed():
-	# warning-ignore:return_value_discarded
-	get_tree().reload_current_scene()
-	if !Network.white_team:
-		Network.white_team = true
+func _on_No_pressed():
+	get_tree().paused = false
+	side_ui.get_node("ConfirmationPopup").hide()
+	# Resume timer
+# warning-ignore:integer_division
+	pause_time = Time.get_ticks_msec()/1000 - pause_time
+
+
+func _on_ConfirmationPopup_about_to_show():
+	# Pause scene tree while waiting for confirmation
+	get_tree().paused = true

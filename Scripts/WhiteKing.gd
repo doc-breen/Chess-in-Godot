@@ -26,8 +26,6 @@ func _ready():
 	# warning-ignore:return_value_discarded
 	connect("cRight",main,"_on_cRight_received")
 	# warning-ignore:return_value_discarded
-	Network.connect("white_team_test",self,"on_team_test")
-# warning-ignore:return_value_discarded
 	connect("check_alert",main,"_on_CheckAlert_received")
 	
 
@@ -35,6 +33,8 @@ func _process(_delta):
 	if main.checkCheck(current_tile,'blue'):
 		check = true
 		never_checked = false
+		if Network.white_team:
+			emit_signal("check_alert")
 
 func castling_test():
 	# Test for castling
