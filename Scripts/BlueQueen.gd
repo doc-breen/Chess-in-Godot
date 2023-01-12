@@ -17,11 +17,11 @@ func _ready():
 	self.add_to_group("blue")
 	
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'white'):
 			legal_tiles.append(tile)
@@ -52,7 +52,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(test_state):
 	attacks = []
 	var tileN
 	var tileS
@@ -65,7 +65,7 @@ func find_attacks():
 	# Rook moves
 	for col in range(1,current_tile.y+1):
 		tileN = Vector2(current_tile.x,current_tile.y-col)
-		if main.space_is_empty(tileN):
+		if main.space_is_empty(tileN,test_state):
 			attacks.append(tileN)
 		else:
 			attacks.append(tileN)
@@ -73,7 +73,7 @@ func find_attacks():
 	
 	for col in range(current_tile.y+1,8):
 		tileS = Vector2(current_tile.x,col)
-		if main.space_is_empty(tileS):
+		if main.space_is_empty(tileS,test_state):
 			attacks.append(tileS)
 		else:
 			attacks.append(tileS)
@@ -81,7 +81,7 @@ func find_attacks():
 			
 	for row in range(current_tile.x+1,8):
 		tileE = Vector2(row,current_tile.y)
-		if main.space_is_empty(tileE):
+		if main.space_is_empty(tileE,test_state):
 			attacks.append(tileE)
 		
 		else:
@@ -90,7 +90,7 @@ func find_attacks():
 		
 	for row in range(1,current_tile.x+1):
 		tileW = Vector2(current_tile.x-row,current_tile.y)
-		if main.space_is_empty(tileW):
+		if main.space_is_empty(tileW,test_state):
 			attacks.append(tileW)
 		
 		else:
@@ -100,7 +100,7 @@ func find_attacks():
 	# Bishop moves
 	for d in range(1,current_tile.x+1):
 		tileNW = Vector2(current_tile.x-d,current_tile.y-d)
-		if main.space_is_empty(tileNW):
+		if main.space_is_empty(tileNW,test_state):
 			attacks.append(tileNW)
 		
 		else:
@@ -109,7 +109,7 @@ func find_attacks():
 		
 	for d in range(1,current_tile.x+1):
 		tileSW = Vector2(current_tile.x-d,current_tile.y+d)
-		if main.space_is_empty(tileSW):
+		if main.space_is_empty(tileSW,test_state):
 			attacks.append(tileSW)
 		
 		else:
@@ -118,7 +118,7 @@ func find_attacks():
 	var c = 1
 	for d in range(current_tile.x+1,8):
 		tileNE = Vector2(d,current_tile.y-c)
-		if main.space_is_empty(tileNE):
+		if main.space_is_empty(tileNE,test_state):
 			attacks.append(tileNE)
 		
 		else:
@@ -129,7 +129,7 @@ func find_attacks():
 	c = 1
 	for d in range(current_tile.x+1,8):
 		tileSE = Vector2(d,current_tile.y+c)
-		if main.space_is_empty(tileSE):
+		if main.space_is_empty(tileSE,test_state):
 			attacks.append(tileSE)
 		else:
 			attacks.append(tileSE)
@@ -150,4 +150,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)

@@ -16,10 +16,10 @@ onready var particle_cloud = $CPUParticles2D
 
 func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 
 func _get_legal_tiles():
-	find_attacks()
+	find_attacks(main.board_state)
 	# need to check and display x and y tiles if
 	# available.  Also rules for castling...
 	
@@ -51,7 +51,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(test_state):
 	var tile_up
 	var tile_dn
 	var tile_lt
@@ -61,25 +61,25 @@ func find_attacks():
 		tile_up = Vector2(current_tile.x,current_tile.y-row)
 		
 		attacks.append(tile_up)
-		if !main.space_is_empty(tile_up):
+		if !main.space_is_empty(tile_up,test_state):
 			break
 		
 	for row in range(current_tile.y+1,8):
 		tile_dn = Vector2(current_tile.x,row)
 		attacks.append(tile_dn)
-		if !main.space_is_empty(tile_dn):
+		if !main.space_is_empty(tile_dn,test_state):
 			break
 		
 	for col in range(current_tile.x+1,8):
 		tile_rt = Vector2(col,current_tile.y)
 		attacks.append(tile_rt)
-		if !main.space_is_empty(tile_rt):
+		if !main.space_is_empty(tile_rt,test_state):
 			break
 	
 	for col in range(1,current_tile.x+1):
 		tile_lt = Vector2(current_tile.x-col,current_tile.y)
 		attacks.append(tile_lt)
-		if !main.space_is_empty(tile_lt):
+		if !main.space_is_empty(tile_lt,test_state):
 			break
 
 func _on_Piece_is_selected():
@@ -100,5 +100,5 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)
 

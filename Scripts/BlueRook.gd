@@ -13,16 +13,13 @@ onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	var homie = self.position/Globals.TILE_SIZE
-	homie.x = floor(homie.x)
-	homie.y = floor(homie.y)
-	current_tile = homie
-	find_attacks()
+	current_tile = Globals.xy_2_tile(self.position)
+	find_attacks(main.board_state)
 
 func _get_legal_tiles():
 	
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'white'):
@@ -52,7 +49,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(test_state):
 	attacks = []
 	var tile_up
 	var tile_dn
@@ -61,7 +58,7 @@ func find_attacks():
 	for row in range(1,current_tile.y+1):
 		tile_up = Vector2(current_tile.x,current_tile.y-row)
 		# Check if the space is available
-		if main.space_is_empty(tile_up):
+		if main.space_is_empty(tile_up,test_state):
 			attacks.append(tile_up)
 		else:
 			attacks.append(tile_up)
@@ -69,7 +66,7 @@ func find_attacks():
 		
 	for row in range(current_tile.y+1,8):
 		tile_dn = Vector2(current_tile.x,row)
-		if main.space_is_empty(tile_dn):
+		if main.space_is_empty(tile_dn,test_state):
 			attacks.append(tile_dn)
 		else:
 			attacks.append(tile_dn)
@@ -77,7 +74,7 @@ func find_attacks():
 
 	for col in range(current_tile.x+1,8):
 		tile_rt = Vector2(col,current_tile.y)
-		if main.space_is_empty(tile_rt):
+		if main.space_is_empty(tile_rt,test_state):
 			attacks.append(tile_rt)
 		else:
 			attacks.append(tile_rt)
@@ -85,7 +82,7 @@ func find_attacks():
 	
 	for col in range(1,current_tile.x+1):
 		tile_lt = Vector2(current_tile.x-col,current_tile.y)
-		if main.space_is_empty(tile_lt):
+		if main.space_is_empty(tile_lt,test_state):
 			attacks.append(tile_lt)
 		
 		else:
@@ -110,5 +107,5 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)
 

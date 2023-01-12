@@ -13,11 +13,11 @@ onready var particle_cloud = $CPUParticles2D
 
 func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for t in attacks:
 		if main.space_is_empty(t) or main.space_is_enemy(t,'blue'):
 			legal_tiles.append(t)
@@ -45,7 +45,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(_test_state):
 	attacks = []
 	# Easiest piece
 	var upRt = Vector2(current_tile.x+1,current_tile.y-2)
@@ -74,5 +74,5 @@ func _on_Piece_is_dropped():
 	particle_cloud.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)
 

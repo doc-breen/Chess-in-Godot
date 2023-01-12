@@ -34,7 +34,7 @@ const brook = preload("res://Scenes/BlueRook.tscn")
 func _ready():
 	# warning-ignore:return_value_discarded
 	Network.connect("update_board",self,"_on_update_board")
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
 	Network.connect("team_change",self,"_on_team_change")
 	# By the time the main node readies, all other nodes should be added
 	# so that this loop to disable blue pieces ensures that white goes first
@@ -43,7 +43,7 @@ func _ready():
 	
 # Need process to check turn and when to display Castling UI
 func _process(_delta):
-# warning-ignore:integer_division
+	# warning-ignore:integer_division
 	var tim = Time.get_ticks_msec()/1000 - clock_start
 	time_string = '%02d : %02d : %02d'
 	var mn = floor(tim/60)
@@ -63,20 +63,20 @@ func _process(_delta):
 		castle_ui.visible = false
 
 
-func space_is_empty(tile) -> bool:
+func space_is_empty(tile,test_state=board_state) -> bool:
 	# This function will be called by pieces when checking
 	# for legal spaces to highlight. tile is a Vector2
 	# Check edge
 	if tile.x > 7 or tile.y > 7 or tile.x < 0 or tile.y < 0:
 		return false
 	
-	if (board_state[tile.y][tile.x] == Globals.empty):
+	if (test_state[tile.y][tile.x] == Globals.empty):
 		return true
 	else: 
 		return false
 
 # team_color should be the color of the enemy team
-func space_is_enemy(tile,team_color) -> bool:
+func space_is_enemy(tile,team_color,test_state=board_state) -> bool:
 	# Check edge
 	if tile.x > 7 or tile.y > 7 or tile.x < 0 or tile.y < 0:
 		return false
@@ -88,7 +88,7 @@ func space_is_enemy(tile,team_color) -> bool:
 	if team_color == 'blue':
 		team = [7,8,9,10,11,12]
 	
-	if board_state[tile.y][tile.x] in team:
+	if test_state[tile.y][tile.x] in team:
 		return true
 	else:
 		return false
@@ -98,9 +98,10 @@ func checkCheck(tile,team_color):
 	# team_color is the team to check if it can attack
 	var team_nodes = get_tree().get_nodes_in_group(team_color)
 	var count = 0
+	
 	for n in team_nodes:
 		count += 1
-		n.find_attacks()
+		n.find_attacks(board_state)
 		# Each piece scene has a var attacks which
 		# stores the tiles that piece can "see"
 		if tile in n.attacks:
@@ -109,6 +110,32 @@ func checkCheck(tile,team_color):
 		# Return false at the end of the for loop
 		if count == len(team_nodes):
 			return false
+
+func test_check(tile,team_color):
+	# Because checkCheck needs to be used on an imaginary board state
+	# This function should eventually replace checkCheck completely.
+	
+	# First copy the actual board_state
+	var imaginary_state = board_state
+	var team_nodes = get_tree().get_nodes_in_group(team_color)
+	var count = 0
+	# Remove piece from test state
+	imaginary_state[tile.y][tile.x] = Globals.empty
+	# Get location of the appropriate king
+	var king
+	if team_color == 'white':
+		king = bking
+	elif team_color == 'blue':
+		king = wking
+	
+	for n in team_nodes:
+		count += 1
+		n.find_attacks(imaginary_state)
+		if king.current_tile in n.attacks:
+			return true
+		if count == len(team_nodes):
+			return false
+		
 
 # Capture goes here because it is easier to manage
 func _on_Piece_capture(area) -> void:
@@ -294,9 +321,15 @@ func _on_cRight_received():
 
 func _on_team_change():
 	# If castling was possible but not done, need to hide the UI
+	cLeft.visible = false
+	cRight.visible = false
 	castle_ui.visible = false
-	# Need this function to also lock out pieces from being moved
+	# Lock out pieces by toggling input_pickable in each piece's Piece
+	# Note: value of white_team changes immediately before this call
+	# This function is technically beginning of a turn, not end of one
+	var king
 	if Network.white_team:
+		king = wking
 		team_label.text = "    White"
 		team_label.self_modulate = Color("ffffff")
 		for p in get_tree().get_nodes_in_group("white"):
@@ -304,17 +337,27 @@ func _on_team_change():
 		for o in get_tree().get_nodes_in_group("blue"):
 			o.piece.input_pickable = false
 	else:
+		king = bking
 		team_label.text = "    Blue"
 		team_label.self_modulate = Color("1f9ad6")
 		for p in get_tree().get_nodes_in_group("blue"):
 			p.piece.input_pickable = true
 		for o in get_tree().get_nodes_in_group("white"):
 			o.piece.input_pickable = false
+	# If current team king is in check, alert
+	king.on_team_test()
+	
+
+func _on_CheckAlert_received():
+	side_ui.get_node("VBoxContainer/CheckAlertPopup").popup()
+	
 
 func _end_game(team_won):
 	# Display which team wins and stop timer?
-	$PopupDialog/Label.text = team_won + ' wins!'
-	$PopupDialog.popup()
+	$EndGamePopup/VBoxContainer/Label.text = team_won + ' wins!'
+	$EndGamePopup.popup()
+	yield(get_tree().create_timer(2),"timeout")
+	$EndGamePopup/VBoxContainer/RestartButton.visible = true
 
 func _on_Pawn_conversion(tile,team,pawn):
 	# Temporarily just spawn a Queen because that's easy and no one picks
@@ -334,30 +377,10 @@ func _on_Pawn_conversion(tile,team,pawn):
 	pawn.queue_free()
 	board.add_child(new_Q)
 
-# This is to keep clock from having an extra 5 seconds
+# Reset clock time
 func _on_ClockDisplay_ready():
-# warning-ignore:integer_division
+	# warning-ignore:integer_division
 	clock_start = Time.get_ticks_msec()/1000
-
-
-func _on_ConversionMenu_index_pressed(index):
-	# Piece has been selected
-	
-	match index:
-		1:
-			# Knight
-			 
-			pass
-		2:
-			# Bishop
-			pass
-		3:
-			# Queen
-			pass
-		4:
-			# Rook
-			pass
-	
 
 
 func _on_ConcedeButton_pressed():
@@ -370,3 +393,10 @@ func _on_ConcedeButton_pressed():
 	# Disable button
 	side_ui.get_node("VBoxContainer/ConcedeButton").disabled = true
 	
+
+
+func _on_RestartButton_pressed():
+	# warning-ignore:return_value_discarded
+	get_tree().reload_current_scene()
+	if !Network.white_team:
+		Network.white_team = true

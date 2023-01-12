@@ -23,14 +23,14 @@ func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
 	attacks.append(Vector2.ZERO)
 	attacks.append(Vector2.ZERO)
-	find_attacks()
+	find_attacks(main.board_state)
 	# warning-ignore:return_value_discarded
 	connect("convert_piece",main,"_on_Pawn_conversion")
 	
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for t in attacks:
 		if main.space_is_enemy(t,'white'):
 			legal_tiles.append(t)
@@ -69,7 +69,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(_test_state):
 	
 	attacks[0] = Vector2(current_tile.x-1,current_tile.y+1)
 	attacks[1] = Vector2(current_tile.x+1,current_tile.y+1)
@@ -95,5 +95,5 @@ func _on_Piece_is_dropped():
 	
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)
 	
