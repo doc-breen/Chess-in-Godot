@@ -13,14 +13,14 @@ onready var particle_cloud = $CPUParticles2D
 
 func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 
 
 func _get_legal_tiles() -> void:
 	# Easiest piece?  Just check for friendlies blocking the way
 	# Call main.space_is_empty(tile)
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for t in attacks:
 		if main.space_is_empty(t) or main.space_is_enemy(t,'white'):
 			legal_tiles.append(t)
@@ -49,7 +49,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks() -> void:
+func find_attacks(_test_state) -> void:
 	# Knight is the easiest of all
 	var upRt = Vector2(current_tile.x+1,current_tile.y-2)
 	var upLt = Vector2(current_tile.x-1,current_tile.y-2)
@@ -77,4 +77,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)

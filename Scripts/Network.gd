@@ -88,15 +88,6 @@ remote func send_board_update(old_tile,new_tile,piece_id):
 	emit_signal("update_board",old_tile,new_tile,piece_id)
 
 func pass_turn():
-	# Test for check
-	if white_team:
-		# Get blue king tile and see if it's in check
-		emit_signal("blue_team_test")
-	else:
-		# Get white king tile and see if it's in check
-		emit_signal("white_team_test")
-	
-	# Temporarily just changes visual team indicator
 	white_team = !white_team
 	emit_signal("team_change")
 	

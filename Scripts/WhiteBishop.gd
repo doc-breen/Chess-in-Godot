@@ -13,12 +13,12 @@ onready var particle_cloud = $CPUParticles2D
 
 func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 
 func _get_legal_tiles():
 	
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for tile in attacks:
 		if main.space_is_empty(tile) or main.space_is_enemy(tile,'blue'):
 			legal_tiles.append(tile)
@@ -47,7 +47,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(test_state):
 	var diagNW
 	var diagNE
 	var diagSW
@@ -55,7 +55,7 @@ func find_attacks():
 	attacks = []
 	for d in range(1,current_tile.x+1):
 		diagNW = Vector2(current_tile.x-d,current_tile.y-d)
-		if main.space_is_empty(diagNW):
+		if main.space_is_empty(diagNW,test_state):
 			attacks.append(diagNW)
 		
 		else:
@@ -64,7 +64,7 @@ func find_attacks():
 		
 	for d in range(1,current_tile.x+1):
 		diagSW = Vector2(current_tile.x-d,current_tile.y+d)
-		if main.space_is_empty(diagSW):
+		if main.space_is_empty(diagSW,test_state):
 			attacks.append(diagSW)
 
 		else:
@@ -74,7 +74,7 @@ func find_attacks():
 	var c = 1
 	for d in range(current_tile.x+1,8):
 		diagNE = Vector2(d,current_tile.y-c)
-		if main.space_is_empty(diagNE):
+		if main.space_is_empty(diagNE,test_state):
 			attacks.append(diagNE)
 		
 		else:
@@ -85,7 +85,7 @@ func find_attacks():
 	c = 1
 	for d in range(current_tile.x+1,8):
 		diagSE = Vector2(d,current_tile.y+c)
-		if main.space_is_empty(diagSE):
+		if main.space_is_empty(diagSE,test_state):
 			attacks.append(diagSE)
 		
 		else:
@@ -109,4 +109,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)

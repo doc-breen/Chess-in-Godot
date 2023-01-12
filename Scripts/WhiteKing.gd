@@ -16,16 +16,19 @@ var can_castle = false
 signal cRight
 signal cLeft
 var never_checked = true
+signal check_alert
 
 func _ready():
 	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks()
+	find_attacks(main.board_state)
 	# warning-ignore:return_value_discarded
 	connect("cLeft",main,"_on_cLeft_received")
 	# warning-ignore:return_value_discarded
 	connect("cRight",main,"_on_cRight_received")
 	# warning-ignore:return_value_discarded
-	Network.connect("white_team_test",self,"_on_team_test")
+	Network.connect("white_team_test",self,"on_team_test")
+# warning-ignore:return_value_discarded
+	connect("check_alert",main,"_on_CheckAlert_received")
 	
 
 func _process(_delta):
@@ -45,17 +48,17 @@ func castling_test():
 
 func _get_legal_tiles():
 	legal_tiles=[]
-	find_attacks()
+	find_attacks(main.board_state)
 	for t in attacks:
 		if t.y > 7 or t.x > 7:
 			pass
 		elif !main.checkCheck(t,'blue') and !main.space_is_enemy(t,'white'):
 			legal_tiles.append(t)
 
-func _on_team_test():
+func on_team_test():
 	# Use current_tile and test if it's in check
 	if main.checkCheck(current_tile,"blue"):
-		print("White King in Check!")
+		emit_signal("check_alert")
 	
 	
 
@@ -85,7 +88,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(_test_state):
 	attacks = []
 	var tileN = Vector2(current_tile.x,current_tile.y-1)
 	var tileS = Vector2(current_tile.x,current_tile.y+1)
@@ -118,4 +121,4 @@ func _on_Piece_is_dropped():
 	z_index = 0
 	_unshow_tiles()
 	# This last call is to update the attacks array for check checking
-	find_attacks()
+	find_attacks(main.board_state)

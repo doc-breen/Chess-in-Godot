@@ -14,21 +14,26 @@ onready var piece = $Piece
 onready var light = $Light2D
 onready var particle_cloud = $CPUParticles2D
 var can_castle = false
-signal cRight()
-signal cLeft()
+signal cRight
+signal cLeft
 var never_checked = true
+signal check_alert
+
 
 func _ready():
 	# Initialize home tile
 	current_tile = Globals.xy_2_tile(self.position)
 	# Store attackable tiles
-	find_attacks()
+	find_attacks(main.board_state)
 	# warning-ignore:return_value_discarded
 	connect("cLeft",main,"_on_cLeft_received")
 	# warning-ignore:return_value_discarded
 	connect("cRight",main,"_on_cRight_received")
 	# warning-ignore:return_value_discarded
-	Network.connect("blue_team_test",self,"_on_team_test")
+	Network.connect("blue_team_test",self,"on_team_test")
+# warning-ignore:return_value_discarded
+	connect("check_alert",main,"_on_CheckAlert_received")
+
 
 func _process(_delta):
 	if main.checkCheck(current_tile,'white'):
@@ -48,16 +53,19 @@ func castling_test():
 func _get_legal_tiles():
 	# need to check and display x and y tiles if available.
 	legal_tiles = []
-	find_attacks()
+	find_attacks(main.board_state)
 	for t in attacks:
+		# Each tile must be empty and also not be in check
 		if main.space_is_empty(t) and !main.checkCheck(t,'white'):
 			legal_tiles.append(t)
 		elif main.space_is_enemy(t,'white') and !main.checkCheck(t,'white'):
 			legal_tiles.append(t)
 	
-func _on_team_test():
+func on_team_test():
 	if main.checkCheck(current_tile,"white"):
-		print("Blue King in Check!")
+		# Display warning message
+		emit_signal("check_alert")
+		
 	
 
 func _show_tiles():
@@ -83,7 +91,7 @@ func _move_check() -> bool:
 	else:
 		return false
 
-func find_attacks():
+func find_attacks(_test_state):
 	# Store all moves in array
 	var tileN = Vector2(current_tile.x,current_tile.y-1)
 	var tileS = Vector2(current_tile.x,current_tile.y+1)
@@ -115,4 +123,4 @@ func _on_Piece_is_dropped():
 	light.visible = false
 	z_index = 0
 	_unshow_tiles()
-	find_attacks()
+	find_attacks(main.board_state)
