@@ -1,112 +1,87 @@
-extends Node2D
+extends Piece
 
-var legal_tiles = []
-var current_tile: Vector2
-var tile_states = []
-onready var board = get_node('../../Board')
-onready var main = get_node('/root/Main')
-var test_tile: Vector2
-var attacks = []
-onready var piece = $Piece
-onready var light = $Light2D
-onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks(main.board_state)
+	team = 'white'
+	enemy = 'blue'
+	piece_id = Globals.wB
+	find_attacks()
+# warning-ignore:return_value_discarded
+	connect('piece_selected',self,"_on_Piece_is_selected")
+	# warning-ignore:return_value_discarded
+	connect("piece_dropped",self,'_on_Piece_is_dropped')
+	add_to_group(team)
+	add_to_group('Pieces')
 
-func _get_legal_tiles():
-	
-	legal_tiles=[]
-	find_attacks(main.board_state)
-	for tile in attacks:
-		if main.space_is_empty(tile) or main.space_is_enemy(tile,'blue'):
-			legal_tiles.append(tile)
-	
-
-func _show_tiles():
-	_get_legal_tiles()
-	for t in legal_tiles:
-		tile_states.append(board.get_cellv(t))
-		board.set_cellv(t,6)
-
-func _unshow_tiles():
-	if len(tile_states) > 0:
-		for t in range(0,len(tile_states)):
-			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the legal_tiles
-	tile_states=[]
-
-func _move_check() -> bool:
-	var test_pos = get_global_mouse_position()/Globals.TILE_SIZE
-	test_tile.x = floor(test_pos.x)
-	test_tile.y = floor(test_pos.y)
-	# See if it's green
-	if board.get_cellv(test_tile) == 6:
-		return true
-	else:
-		return false
-
-func find_attacks(test_state):
-	var diagNW
-	var diagNE
-	var diagSW
-	var diagSE
-	attacks = []
-	for d in range(1,current_tile.x+1):
-		diagNW = Vector2(current_tile.x-d,current_tile.y-d)
-		if main.space_is_empty(diagNW,test_state):
-			attacks.append(diagNW)
+# Done
+func find_attacks(state: Array=board.board_state):
+	if state[current_tile.y][current_tile.x] == piece_id:
+		var diagNW: Vector2
+		var diagNE: Vector2
+		var diagSE: Vector2
+		var diagSW: Vector2
+		attacks = []
+		# Loop over tiles, checking if square is occupied
+		for d in range(1,current_tile.x+1):
+			diagNW = Vector2(current_tile.x-d,current_tile.y-d)
+			if diagNW.x < 0 or diagNW.y < 0 or diagNW.x > 7 or diagNW.y > 7:
+				continue
+			elif board.space_is_empty(diagNW,state):
+				attacks.append(diagNW)
+			elif board.space_is_enemy(diagNW,state,enemy):
+				attacks.append(diagNW)
+				break
+			else: break
+		for d in range(1,current_tile.x+1):
+			diagSW = Vector2(current_tile.x-d,current_tile.y+d)
+			if diagSW.x < 0 or diagSW.y < 0 or diagSW.x > 7 or diagSW.y > 7:
+				continue
+			elif board.space_is_empty(diagSW,state):
+				attacks.append(diagSW)
+			elif board.space_is_enemy(diagSW,state,enemy):
+				attacks.append(diagSW)
+				break
+			else: break
 		
-		else:
-			attacks.append(diagNW)
-			break
-		
-	for d in range(1,current_tile.x+1):
-		diagSW = Vector2(current_tile.x-d,current_tile.y+d)
-		if main.space_is_empty(diagSW,test_state):
-			attacks.append(diagSW)
+		var c = 1
+		for d in range(current_tile.x+1,8):
+			diagNE = Vector2(d,current_tile.y-c)
+			if diagNE.x < 0 or diagNE.y < 0 or diagNE.x > 7 or diagNE.y > 7:
+				continue
+			elif board.space_is_empty(diagNE,state):
+				attacks.append(diagNE)
+			elif board.space_is_enemy(diagNE,state,enemy):
+				attacks.append(diagNE)
+				break
+			else: break
+			c+=1
+		c = 1
+		for d in range(current_tile.x+1,8):
+			diagSE = Vector2(d,current_tile.y+c)
+			if diagSE.x < 0 or diagSE.y < 0 or diagSE.x > 7 or diagSE.y > 7:
+				continue
+			elif board.space_is_empty(diagSE,state):
+				attacks.append(diagSE)
+			elif board.space_is_enemy(diagSE,state,enemy):
+				attacks.append(diagSE)
+				break
+			else: break
+			c += 1
+	else: attacks = []
 
-		else:
-			attacks.append(diagSW)
-			break
-	
-	var c = 1
-	for d in range(current_tile.x+1,8):
-		diagNE = Vector2(d,current_tile.y-c)
-		if main.space_is_empty(diagNE,test_state):
-			attacks.append(diagNE)
-		
-		else:
-			attacks.append(diagNE)
-			break
-		c+=1
-	
-	c = 1
-	for d in range(current_tile.x+1,8):
-		diagSE = Vector2(d,current_tile.y+c)
-		if main.space_is_empty(diagSE,test_state):
-			attacks.append(diagSE)
-		
-		else:
-			attacks.append(diagSE)
-			break
-		c+=1
 
+# Done
 func _on_Piece_is_selected():
-	light.visible = true
-	particle_cloud.visible = true
-	z_index = 40
-	_show_tiles()
+	find_attacks(board.board_state)
+	# Bishop legal moves only need to be filtered
+	get_legal_tiles(attacks)
+	pass_legal_tiles(legal_tiles)
 
 
+# Untested
 func _on_Piece_is_dropped():
-	if _move_check():
-		piece.move_piece(test_tile,Globals.wB)
-		current_tile = test_tile
-	
-	particle_cloud.visible = false
-	light.visible = false
-	z_index = 0
-	_unshow_tiles()
-	find_attacks(main.board_state)
+	# Test if this attacks enemy king
+	find_attacks(board.board_state)
+#	if board.wking.current_tile in attacks:
+#		emit_signal("check_event",self,enemy)
+		

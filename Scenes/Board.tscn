@@ -1,0 +1,325 @@
+[gd_scene load_steps=20 format=2]
+
+[ext_resource path="res://Assets/block.png" type="Texture" id=1]
+[ext_resource path="res://Scripts/Board.gd" type="Script" id=2]
+[ext_resource path="res://Scenes/WhiteKing.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scenes/BlueKing.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Scenes/BlueBishop.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Scenes/BlueKnight.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Scenes/BluePawn.tscn" type="PackedScene" id=7]
+[ext_resource path="res://Scenes/BlueRook.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Scenes/BlueQueen.tscn" type="PackedScene" id=9]
+[ext_resource path="res://Scenes/WhiteKnight.tscn" type="PackedScene" id=10]
+[ext_resource path="res://Scenes/WhiteBishop.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Scenes/WhiteRook.tscn" type="PackedScene" id=12]
+[ext_resource path="res://Scenes/WhiteQueen.tscn" type="PackedScene" id=13]
+[ext_resource path="res://Scenes/WhitePawn.tscn" type="PackedScene" id=14]
+[ext_resource path="res://Assets/rook_w.png" type="Texture" id=15]
+[ext_resource path="res://Assets/queen_w.png" type="Texture" id=16]
+[ext_resource path="res://Assets/knight_w.png" type="Texture" id=17]
+[ext_resource path="res://Assets/bishop_w.png" type="Texture" id=18]
+
+[sub_resource type="TileSet" id=1]
+0/name = "block.png 0"
+0/texture = ExtResource( 1 )
+0/tex_offset = Vector2( 0, 0 )
+0/modulate = Color( 1, 1, 1, 1 )
+0/region = Rect2( 0, 0, 64, 64 )
+0/tile_mode = 0
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+0/shape_one_way = false
+0/shape_one_way_margin = 0.0
+0/shapes = [  ]
+0/z_index = 0
+1/name = "block.png 1"
+1/texture = ExtResource( 1 )
+1/tex_offset = Vector2( 0, 0 )
+1/modulate = Color( 0.196078, 0.415686, 0.878431, 1 )
+1/region = Rect2( 0, 0, 64, 64 )
+1/tile_mode = 0
+1/occluder_offset = Vector2( 0, 0 )
+1/navigation_offset = Vector2( 0, 0 )
+1/shape_offset = Vector2( 0, 0 )
+1/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+1/shape_one_way = false
+1/shape_one_way_margin = 0.0
+1/shapes = [  ]
+1/z_index = 0
+2/name = "block.png 2"
+2/texture = ExtResource( 1 )
+2/tex_offset = Vector2( 0, 0 )
+2/modulate = Color( 0.254902, 0.815686, 0.25098, 1 )
+2/region = Rect2( 0, 0, 64, 64 )
+2/tile_mode = 0
+2/occluder_offset = Vector2( 0, 0 )
+2/navigation_offset = Vector2( 0, 0 )
+2/shape_offset = Vector2( 0, 0 )
+2/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+2/shape_one_way = false
+2/shape_one_way_margin = 0.0
+2/shapes = [  ]
+2/z_index = 0
+3/name = "block.png 3"
+3/texture = ExtResource( 1 )
+3/tex_offset = Vector2( 0, 0 )
+3/modulate = Color( 1, 0.603922, 0.184314, 1 )
+3/region = Rect2( 0, 0, 64, 64 )
+3/tile_mode = 0
+3/occluder_offset = Vector2( 0, 0 )
+3/navigation_offset = Vector2( 0, 0 )
+3/shape_offset = Vector2( 0, 0 )
+3/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+3/shape_one_way = false
+3/shape_one_way_margin = 0.0
+3/shapes = [  ]
+3/z_index = 0
+4/name = "block.png 4"
+4/texture = ExtResource( 1 )
+4/tex_offset = Vector2( 0, 0 )
+4/modulate = Color( 0.831373, 0.105882, 0.172549, 1 )
+4/region = Rect2( 0, 0, 64, 64 )
+4/tile_mode = 0
+4/occluder_offset = Vector2( 0, 0 )
+4/navigation_offset = Vector2( 0, 0 )
+4/shape_offset = Vector2( 0, 0 )
+4/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+4/shape_one_way = false
+4/shape_one_way_margin = 0.0
+4/shapes = [  ]
+4/z_index = 0
+5/name = "block.png 5"
+5/texture = ExtResource( 1 )
+5/tex_offset = Vector2( 0, 0 )
+5/modulate = Color( 0, 0, 0, 1 )
+5/region = Rect2( 0, 0, 64, 64 )
+5/tile_mode = 0
+5/occluder_offset = Vector2( 0, 0 )
+5/navigation_offset = Vector2( 0, 0 )
+5/shape_offset = Vector2( 0, 0 )
+5/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+5/shape_one_way = false
+5/shape_one_way_margin = 0.0
+5/shapes = [  ]
+5/z_index = 0
+
+[node name="Board" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = SubResource( 1 )
+format = 1
+tile_data = PoolIntArray( 0, 0, 0, 1, 1, 0, 2, 0, 0, 3, 1, 0, 4, 0, 0, 5, 1, 0, 6, 0, 0, 7, 1, 0, 65536, 1, 0, 65537, 0, 0, 65538, 1, 0, 65539, 0, 0, 65540, 1, 0, 65541, 0, 0, 65542, 1, 0, 65543, 0, 0, 131072, 0, 0, 131073, 1, 0, 131074, 0, 0, 131075, 1, 0, 131076, 0, 0, 131077, 1, 0, 131078, 0, 0, 131079, 1, 0, 196608, 1, 0, 196609, 0, 0, 196610, 1, 0, 196611, 0, 0, 196612, 1, 0, 196613, 0, 0, 196614, 1, 0, 196615, 0, 0, 262144, 0, 0, 262145, 1, 0, 262146, 0, 0, 262147, 1, 0, 262148, 0, 0, 262149, 1, 0, 262150, 0, 0, 262151, 1, 0, 327680, 1, 0, 327681, 0, 0, 327682, 1, 0, 327683, 0, 0, 327684, 1, 0, 327685, 0, 0, 327686, 1, 0, 327687, 0, 0, 393216, 0, 0, 393217, 1, 0, 393218, 0, 0, 393219, 1, 0, 393220, 0, 0, 393221, 1, 0, 393222, 0, 0, 393223, 1, 0, 458752, 1, 0, 458753, 0, 0, 458754, 1, 0, 458755, 0, 0, 458756, 1, 0, 458757, 0, 0, 458758, 1, 0, 458759, 0, 0 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="BlueKing" parent="TileMap" instance=ExtResource( 4 )]
+position = Vector2( 288, 32 )
+
+[node name="BlueBishop" parent="TileMap" instance=ExtResource( 5 )]
+position = Vector2( 352, 32 )
+
+[node name="WhiteKing" parent="TileMap" instance=ExtResource( 3 )]
+position = Vector2( 288, 480 )
+
+[node name="BlueBishop2" parent="TileMap" instance=ExtResource( 5 )]
+position = Vector2( 160, 32 )
+
+[node name="BlueKnight" parent="TileMap" instance=ExtResource( 6 )]
+position = Vector2( 96, 32 )
+
+[node name="BlueKnight2" parent="TileMap" instance=ExtResource( 6 )]
+position = Vector2( 416, 32 )
+
+[node name="BluePawn" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 32, 96 )
+
+[node name="BluePawn8" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 480, 96 )
+
+[node name="BluePawn2" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 96, 96 )
+
+[node name="BluePawn5" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 288, 96 )
+
+[node name="BluePawn9" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 224, 96 )
+
+[node name="BluePawn10" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 160, 96 )
+
+[node name="BluePawn6" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 352, 96 )
+
+[node name="BluePawn7" parent="TileMap" instance=ExtResource( 7 )]
+position = Vector2( 416, 96 )
+
+[node name="BlueQueen" parent="TileMap" instance=ExtResource( 9 )]
+position = Vector2( 224, 32 )
+
+[node name="BlueRook" parent="TileMap" instance=ExtResource( 8 )]
+position = Vector2( 480, 32 )
+
+[node name="BlueRook2" parent="TileMap" instance=ExtResource( 8 )]
+position = Vector2( 32, 32 )
+
+[node name="WhiteKnight" parent="TileMap" instance=ExtResource( 10 )]
+position = Vector2( 96, 480 )
+
+[node name="WhiteKnight2" parent="TileMap" instance=ExtResource( 10 )]
+position = Vector2( 416, 480 )
+
+[node name="WhiteBishop" parent="TileMap" instance=ExtResource( 11 )]
+position = Vector2( 160, 480 )
+
+[node name="WhiteBishop2" parent="TileMap" instance=ExtResource( 11 )]
+position = Vector2( 352, 480 )
+
+[node name="WhiteRook" parent="TileMap" instance=ExtResource( 12 )]
+position = Vector2( 32, 480 )
+
+[node name="WhiteRook2" parent="TileMap" instance=ExtResource( 12 )]
+position = Vector2( 480, 480 )
+
+[node name="WhiteQueen" parent="TileMap" instance=ExtResource( 13 )]
+position = Vector2( 224, 480 )
+
+[node name="WhitePawn" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 32, 416 )
+
+[node name="WhitePawn2" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 96, 416 )
+
+[node name="WhitePawn3" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 160, 416 )
+
+[node name="WhitePawn5" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 288, 416 )
+
+[node name="WhitePawn6" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 352, 416 )
+
+[node name="WhitePawn9" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 224, 416 )
+
+[node name="WhitePawn7" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 416, 416 )
+
+[node name="WhitePawn8" parent="TileMap" instance=ExtResource( 14 )]
+position = Vector2( 480, 416 )
+
+[node name="Control" type="Control" parent="."]
+margin_left = 512.0
+margin_right = 840.0
+margin_bottom = 600.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 0.853
+margin_left = 64.0
+margin_right = -72.0
+margin_bottom = 0.199982
+custom_constants/separation = 8
+alignment = 1
+
+[node name="Button" type="Button" parent="Control/VBoxContainer"]
+margin_top = 231.0
+margin_right = 192.0
+margin_bottom = 251.0
+hint_tooltip = "Press this button if you need to change turn manually for some reason."
+text = "White Turn"
+
+[node name="MenuButton" type="Button" parent="Control/VBoxContainer"]
+margin_top = 259.0
+margin_right = 192.0
+margin_bottom = 279.0
+hint_tooltip = "Popup menu displaying board state for debug"
+custom_colors/font_color_pressed = Color( 0.0901961, 0.0901961, 0.0901961, 1 )
+text = "Show Board state"
+
+[node name="PieceConversion" type="PopupMenu" parent="Control"]
+anchor_top = 0.427
+anchor_right = 1.0
+anchor_bottom = 0.427
+margin_left = 56.0
+margin_top = -152.2
+margin_right = -80.0
+margin_bottom = 147.8
+custom_constants/vseparation = 6
+custom_constants/hseparation = 24
+popup_exclusive = true
+items = [ "Queen", ExtResource( 16 ), 0, false, false, 0, 0, null, "", false, "Knight", ExtResource( 17 ), 0, false, false, 1, 0, null, "", false, "Rook", ExtResource( 15 ), 0, false, false, 2, 0, null, "", false, "Bishop", ExtResource( 18 ), 0, false, false, 3, 0, null, "", false ]
+
+[node name="CheckBox" type="PopupDialog" parent="Control"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -108.0
+margin_top = -60.0
+margin_right = 108.0
+margin_bottom = 68.0
+
+[node name="Haha" type="Label" parent="Control/CheckBox"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "Check!"
+align = 1
+valign = 1
+
+[node name="BottomUI" type="Control" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = 512.0
+margin_right = 512.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 400, 50 )
+
+[node name="CastleQueen" type="Button" parent="BottomUI"]
+visible = false
+anchor_left = 0.25
+anchor_top = 0.545
+anchor_right = 0.25
+anchor_bottom = 0.545
+margin_left = -64.0
+margin_top = -15.96
+margin_right = 64.0
+margin_bottom = 16.04
+text = "Queenside"
+
+[node name="Label" type="Label" parent="BottomUI"]
+anchor_left = 0.5
+anchor_top = 0.545
+anchor_right = 0.5
+anchor_bottom = 0.545
+margin_left = -64.0
+margin_top = -15.96
+margin_right = 64.0
+margin_bottom = 16.04
+text = "Press the button to Castle"
+align = 1
+autowrap = true
+
+[node name="CastleKing" type="Button" parent="BottomUI"]
+visible = false
+anchor_left = 0.75
+anchor_top = 0.545
+anchor_right = 0.75
+anchor_bottom = 0.545
+margin_left = -64.0
+margin_top = -15.96
+margin_right = 64.0
+margin_bottom = 16.04
+text = "Kingside"
+
+[connection signal="tree_entered" from="." to="." method="_on_Board_tree_entered"]
+[connection signal="pressed" from="Control/VBoxContainer/Button" to="." method="_on_Button_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/MenuButton" to="." method="_on_MenuButton_pressed"]
+[connection signal="id_pressed" from="Control/PieceConversion" to="." method="_on_PieceConversion_id_pressed"]
+[connection signal="pressed" from="BottomUI/CastleQueen" to="." method="_on_CastleQueen_pressed"]
+[connection signal="pressed" from="BottomUI/CastleKing" to="." method="_on_CastleKing_pressed"]

@@ -1,80 +1,60 @@
-extends Node2D
+extends Piece
 
-var legal_tiles = []
-var current_tile: Vector2
-var tile_states = []
-onready var main = get_node('/root/Main')
-onready var board = get_node('../../Board')
-var attacks = []
-var test_tile: Vector2
-onready var piece = $Piece
-onready var light = $Light2D
-onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks(main.board_state)
-
-
-func _get_legal_tiles() -> void:
-	# Easiest piece?  Just check for friendlies blocking the way
-	# Call main.space_is_empty(tile)
-	legal_tiles=[]
-	find_attacks(main.board_state)
-	for t in attacks:
-		if main.space_is_empty(t) or main.space_is_enemy(t,'white'):
-			legal_tiles.append(t)
-
-
-func _show_tiles() -> void:
-	_get_legal_tiles()
-	for t in legal_tiles:
-		tile_states.append(board.get_cellv(t))
-		board.set_cellv(t,6)
-
-func _unshow_tiles() -> void:
-	if len(tile_states) > 0:
-		for t in range(0,len(tile_states)):
-			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the tile states
-	tile_states=[]
-
-func _move_check() -> bool:
-	var test_pos = get_global_mouse_position()/Globals.TILE_SIZE
-	test_tile.x = floor(test_pos.x)
-	test_tile.y = floor(test_pos.y)
-	# See if it's green
-	if board.get_cellv(test_tile) == 6:
-		return true
-	else:
-		return false
-
-func find_attacks(_test_state) -> void:
-	# Knight is the easiest of all
-	var upRt = Vector2(current_tile.x+1,current_tile.y-2)
-	var upLt = Vector2(current_tile.x-1,current_tile.y-2)
-	var ltUp = Vector2(current_tile.x-2,current_tile.y-1)
-	var rtUp = Vector2(current_tile.x+2,current_tile.y-1)
-	var dnRt = Vector2(current_tile.x+1,current_tile.y+2)
-	var rtDn = Vector2(current_tile.x+2,current_tile.y+1)
-	var dnLt = Vector2(current_tile.x-1,current_tile.y+2)
-	var ltDn = Vector2(current_tile.x-2,current_tile.y+1)
-	attacks = [upRt,upLt,ltUp,rtUp,dnRt,dnLt,rtDn,ltDn]
+	team = 'blue'
+	enemy = 'white'
+	piece_id = Globals.bN
 	
+	find_attacks(board.board_state)
+	# warning-ignore:return_value_discarded
+	connect('piece_selected',self,"_on_Piece_is_selected")
+	# warning-ignore:return_value_discarded
+	connect("piece_dropped",self,'_on_Piece_is_dropped')
+	add_to_group(team)
+	add_to_group('Pieces')
+
+# Done
+func find_attacks(state:= board.board_state):
+	if state[current_tile.y][current_tile.x] == piece_id:
+		# Knight is the easiest of all
+		var upRt = Vector2(current_tile.x+1,current_tile.y-2)
+		var upLt = Vector2(current_tile.x-1,current_tile.y-2)
+		var ltUp = Vector2(current_tile.x-2,current_tile.y-1)
+		var rtUp = Vector2(current_tile.x+2,current_tile.y-1)
+		var dnRt = Vector2(current_tile.x+1,current_tile.y+2)
+		var rtDn = Vector2(current_tile.x+2,current_tile.y+1)
+		var dnLt = Vector2(current_tile.x-1,current_tile.y+2)
+		var ltDn = Vector2(current_tile.x-2,current_tile.y+1)
+		attacks = [upRt,upLt,ltUp,rtUp,dnRt,dnLt,rtDn,ltDn]
+		var good_tiles = []
+		for att in attacks:
+			if att.y >= 0 and att.x >= 0 and att.y < 8 and att.x < 8:
+				good_tiles.append(att)
+		attacks = good_tiles
+	else: attacks = []
+
+
+# Works for now
+func get_legal_tiles(tiles):
+	# Just check that attack isn't occupied by teammate
+	legal_tiles = tiles.duplicate(true)
+	var good_tiles = []
+	for t in tiles:
+		if not board.space_is_enemy(t,board.board_state,team):
+			good_tiles.append(t)
+			
+	legal_tiles = good_tiles
+
 
 func _on_Piece_is_selected():
-	light.visible = true
-	particle_cloud.visible = true
-	z_index = 40
-	
-	_show_tiles()
+	find_attacks(board.board_state)
+	get_legal_tiles(attacks)
+	# First get the legal moves
+	pass_legal_tiles(legal_tiles)
 
+# Untested
 func _on_Piece_is_dropped():
-	if _move_check():
-		piece.move_piece(test_tile,Globals.bN)
-		current_tile = test_tile
-	particle_cloud.visible = false
-	light.visible = false
-	z_index = 0
-	_unshow_tiles()
-	find_attacks(main.board_state)
+	# Test if this attacks enemy king
+	find_attacks(board.board_state)
+
