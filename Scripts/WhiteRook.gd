@@ -1,104 +1,76 @@
-extends Node2D
+extends Piece
 
 
-var legal_tiles = []
-var current_tile: Vector2
-var tile_states = []
-var attacks = []
-# Rook needs this for castling checks
-var has_moved = false
-onready var board = get_node('../../Board')
-onready var main = get_node('/root/Main')
-var test_tile: Vector2
-onready var piece = $Piece
-onready var light = $Light2D
-onready var particle_cloud = $CPUParticles2D
 
 func _ready():
-	current_tile = Globals.xy_2_tile(self.position)
-	find_attacks(main.board_state)
+	self.team = 'white'
+	self.enemy = 'blue'
+	self.piece_id = Globals.wR
+	find_attacks(board.board_state)
+	# warning-ignore:return_value_discarded
+	connect('piece_selected',self,"_on_Piece_is_selected")
+	# warning-ignore:return_value_discarded
+	connect("piece_dropped",self,'_on_Piece_is_dropped')
+	add_to_group(team)
+	add_to_group('Pieces')
 
-func _get_legal_tiles():
-	find_attacks(main.board_state)
-	# need to check and display x and y tiles if
-	# available.  Also rules for castling...
-	
-	legal_tiles = []
-	for tile in attacks:
-		if main.space_is_empty(tile) or main.space_is_enemy(tile,'blue'):
-			legal_tiles.append(tile)
+# Done
+func find_attacks(state:= board.board_state):
+	if state[current_tile.y][current_tile.x] == piece_id:
+		attacks = []
+		var tile_up: Vector2
+		var tile_dn: Vector2
+		var tile_lt: Vector2
+		var tile_rt: Vector2
+		for row in range(1,current_tile.y+1):
+			tile_up = Vector2(current_tile.x,current_tile.y-row)
+			# Check if the space is available
+			if board.space_is_empty(tile_up,state):
+				attacks.append(tile_up)
+			elif board.space_is_enemy(tile_up,state,enemy):
+				attacks.append(tile_up)
+				break
+			else: break
+			
+		for row in range(current_tile.y+1,8):
+			tile_dn = Vector2(current_tile.x,row)
+			if board.space_is_empty(tile_dn,state):
+				attacks.append(tile_dn)
+			elif board.space_is_enemy(tile_dn,state,enemy):
+				attacks.append(tile_dn)
+				break
+			else: break
 
-
-func _show_tiles():
-	_get_legal_tiles()
-	for t in legal_tiles:
-		tile_states.append(board.get_cellv(t))
-		board.set_cellv(t,6)
-
-func _unshow_tiles():
-	# Return tiles to previous states
-	if len(tile_states) > 0:
-		for t in range(0,len(tile_states)):
-			board.set_cellv(legal_tiles[t],tile_states[t])
-	# End by clearing the tiles
-	tile_states=[]
-
-func _move_check() -> bool:
-	test_tile = Globals.xy_2_tile(get_global_mouse_position())
-	# See if it's green
-	if board.get_cellv(test_tile) == 6:
-		return true
-	else:
-		return false
-
-func find_attacks(test_state):
-	var tile_up
-	var tile_dn
-	var tile_lt
-	var tile_rt
-	attacks = []
-	for row in range(1,current_tile.y+1):
-		tile_up = Vector2(current_tile.x,current_tile.y-row)
+		for col in range(current_tile.x+1,8):
+			tile_rt = Vector2(col,current_tile.y)
+			if board.space_is_empty(tile_rt,state):
+				attacks.append(tile_rt)
+			elif board.space_is_enemy(tile_rt,state,enemy):
+				attacks.append(tile_rt)
+				break
+			else: break
 		
-		attacks.append(tile_up)
-		if !main.space_is_empty(tile_up,test_state):
-			break
-		
-	for row in range(current_tile.y+1,8):
-		tile_dn = Vector2(current_tile.x,row)
-		attacks.append(tile_dn)
-		if !main.space_is_empty(tile_dn,test_state):
-			break
-		
-	for col in range(current_tile.x+1,8):
-		tile_rt = Vector2(col,current_tile.y)
-		attacks.append(tile_rt)
-		if !main.space_is_empty(tile_rt,test_state):
-			break
-	
-	for col in range(1,current_tile.x+1):
-		tile_lt = Vector2(current_tile.x-col,current_tile.y)
-		attacks.append(tile_lt)
-		if !main.space_is_empty(tile_lt,test_state):
-			break
+		for col in range(1,current_tile.x+1):
+			tile_lt = Vector2(current_tile.x-col,current_tile.y)
+			if board.space_is_empty(tile_lt,state):
+				attacks.append(tile_lt)
+			
+			elif board.space_is_enemy(tile_lt,state,enemy):
+				attacks.append(tile_lt)
+				break
+			else: break
+	else: attacks = []
+
 
 func _on_Piece_is_selected():
-	light.visible = true
-	particle_cloud.visible = true
-	z_index = 40
-	_show_tiles()
+	find_attacks(board.board_state)
+	# First get the legal moves
+	get_legal_tiles(attacks)
+	pass_legal_tiles(legal_tiles)
 
 
+# Unfinished
 func _on_Piece_is_dropped():
-	if _move_check():
-		piece.move_piece(test_tile,Globals.wR)
-		current_tile = test_tile
-		if has_moved == false:
-			has_moved = true
-	
-	particle_cloud.visible = false
-	light.visible = false
-	z_index = 0
-	_unshow_tiles()
-	find_attacks(main.board_state)
-
+	# Test if this attacks enemy king
+	find_attacks()
+		

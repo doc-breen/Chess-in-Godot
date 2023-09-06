@@ -1,68 +1,109 @@
-extends Area2D
 class_name Piece
+extends Node2D
 
-var selected = false
-var homie: Vector2
-signal is_selected
-signal is_dropped
-signal capture(area)
+# The Piece class contains general behavior that all chess pieces share or need
+# access to.  The parent is always the Board scene, and the InputArea controls
+# how the player interacts with pieces.
 
-onready var main = get_node('/root/Main')
+var current_tile: Vector2
+export var team: String
+export var enemy: String
+export var piece_id: int
+var attacks: = []
+var legal_tiles: = []
+# Boolean to track if piece has ever moved for pawns, kings, and rooks.
+var has_moved = false
+# This is necessary to avoid edge case bugs with turn passing
+var turn_complete = false
+# References to other required nodes
+onready var pick_area = $InputArea
+onready var board = get_node("/root/Board")
+onready var light = $Light2D
+signal unshow_tiles(attack_list)
+signal update_board(old_tile, new_tile, node)
+signal filter_attacks(list, node)
+#signal check_event(node, team)
+signal piece_selected
+signal piece_dropped
+
 
 func _ready():
-	homie = get_parent().position
-# warning-ignore:return_value_discarded
-	connect("capture",main,"_on_Piece_capture")
-
-func _process(delta):
-	# When selected, piece follows mouse movement
-	if selected:
-		_followMouse(delta)
-	# When dropped, piece checks board for legal move
-	# If move is not legal, piece returns to original tile
-	else: 
-		get_parent().position = lerp(get_parent().position, homie,22*delta)
+	current_tile = Globals.xy_2_tile(position)
+	# warning-ignore:return_value_discarded
+	connect("unshow_tiles",board,"_on_tiles_off_signal")
+	# warning-ignore:return_value_discarded
+	connect("update_board",board,"_on_board_updated")
+	# warning-ignore:return_value_discarded
+	#connect("check_event",board,"_on_check_received")
+	# warning-ignore:return_value_discarded
+	connect("filter_attacks",board,"_on_attacks_received")
 	
-# Track mouse movement
-func _followMouse(delta):
-	var mouse_pos = get_global_mouse_position()
-	get_parent().position = lerp(get_parent().position,mouse_pos,77*delta)
 
-# This is the function to pick up the piece
-func _on_Piece_input_event(_viewport, _event, _shape_idx):
-	# Double clicks cause extra events
-	# So add the !selected to make sure it ignores the extras
-	if Input.is_action_just_pressed("click") and !selected:
-		selected = true
-		# This signal goes to the parent
-		emit_signal("is_selected")
-		# Set original tile to snap back to in case of illegal move
-		homie = get_parent().position
+func find_attacks(_state:Array=board.board_state):
+	pass
 
-# This separate input event function is to handle releasing button
-func _input(event):
-	# Needs the echo check for same reason as above
-	if event is InputEventMouseButton and not event.is_echo():
-		# Need a check for selected because otherwise ALL pawns
-		# will move when 1 is.
-		if selected:
-			selected = false
-			emit_signal("is_dropped")
-		else:
-			pass
 
-# The function for moving the piece, must update the board
-func move_piece(new_tile,piece_id):
-# Store current tile before updating the screen position to pass
-# to the update signal
+# Default behavior for easy pieces like Rook
+func get_legal_tiles(tiles:Array):
+	legal_tiles = tiles
 
-	var current_tile = Globals.xy_2_tile(homie)
-	# Update homie so that the lock position works
-	homie = Globals.tile_2_xy(new_tile)
-	# capture possible pieces
-	if get_overlapping_areas():
-		emit_signal('capture',get_overlapping_areas()[0])
+
+func pass_legal_tiles(attack_list:Array):
+	# Send the list to board for filtering
+	emit_signal("filter_attacks",attack_list,self)
+
+
+func vfx_on():
+	# Lights
+	light.enabled = true
+	# Height
+	z_index = 50
+
+
+func vfx_off():
+	light.enabled = false
+	z_index = 0
+
+
+func _on_InputArea_is_selected():
+	# Any graphical effects of picking up piece go here
+	vfx_on()
+	emit_signal("piece_selected")
+
+
+func _on_InputArea_released():
+	# Make sure location is a lit tile
+	var test_tile = Globals.xy_2_tile(get_global_mouse_position())
+	if board.move_test(test_tile):
+		# Update current_tile
+		var prev_tile: = current_tile
+		current_tile = test_tile
+		# Update screen position
+		pick_area.home_position = Globals.tile_2_xy(current_tile)
+		# Update game state
+		if has_moved == false:
+			has_moved = true
+		# Capture
+		var cap_area = pick_area.get_overlapping_areas()
+		if cap_area:
+			_on_Piece_captured(cap_area[0])
+		
+		emit_signal("update_board",prev_tile,current_tile,piece_id)
+		turn_complete = true
+		# Test if this attacks enemy king?
+	emit_signal("piece_dropped")
+	emit_signal("unshow_tiles",legal_tiles)
+	# Turn off graphical effects
+	vfx_off()
 	
-	# Update board_state
-	Network.send_board_update(current_tile,new_tile,piece_id)
-	Network.pass_turn()
+	# End turn
+	if turn_complete:
+		turn_complete = false
+		Network.pass_turn()
+		
+
+
+
+func _on_Piece_captured(area):
+	area.get_parent().queue_free()
+
