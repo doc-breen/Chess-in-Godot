@@ -30,6 +30,7 @@ onready var check_menu = $Control/CheckBox
 onready var castle_ui = $BottomUI
 onready var qside_btn = $BottomUI/CastleQueen
 onready var kside_btn = $BottomUI/CastleKing
+onready var turn_btn = $Control/VBoxContainer/Button
 
 
 func _ready():
@@ -42,17 +43,28 @@ func _ready():
 		board_state[nod.current_tile.y][nod.current_tile.x] = nod.piece_id
 	# Make sure to lock out blue pieces here
 	_lock_pieces("blue")
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
 	Network.connect("update_board",self,"_on_board_updated")
+	initialize_kings()
+	for col in range(0,8):
+		for row in range(3,5):
+			Network.ice_tiles.append(Vector2(col,row))
+	
+
+
+func initialize_kings():
+	bking.get_legal_tiles()
+	wking.get_legal_tiles()
 
 
 func _process(_delta):
 	if Network.white_team:
-		$Control/VBoxContainer/Button.text = "White turn"
-	else: $Control/VBoxContainer/Button.text = 'Blue turn'
+		turn_btn.text = "White turn"
+	else:
+		turn_btn.text = 'Blue turn'
 
 
-# Done
+# Done. Do not change.
 func _lock_pieces(team:String='Pieces'):
 	# Toggle off the input_pickable values for Piece on team
 	for n in get_tree().get_nodes_in_group(team):
@@ -60,7 +72,7 @@ func _lock_pieces(team:String='Pieces'):
 	
 
 
-# Done
+# Done. Do not change.
 func _unlock_pieces(team:String):
 	# Toggle on the input_pickable values for Piece on team
 	for n in get_tree().get_nodes_in_group(team):
@@ -90,20 +102,7 @@ func test_check(tile:Vector2, state:=board_state):
 			return false
 
 
-# Unnecessary?
-#func test_would_check(tile:Vector2, piece_id:int, king:Piece) -> bool:
-#	# copy the current board state
-#	var test_state = board_state.duplicate(true)
-#	# change the board state
-#	test_state[tile.y][tile.x] = piece_id
-#	# run test_check on the changed state
-#	if test_check(king.current_tile,test_state):
-#		return true
-#	else:
-#		return false
-
-
-# Untested
+# Some edge cases still fucked
 func _test_checkmate():
 	# Test if any legal moves exist
 	var king
@@ -111,32 +110,45 @@ func _test_checkmate():
 		king = wking
 	else:
 		king = bking
-
-	if king.legal_tiles:
+	king.get_legal_tiles()
+	var p_set = get_tree().get_nodes_in_group(king.team)
+	if len(king.legal_tiles) > 0:
 		# king.legal_tiles is not allowed to be into check
 		# so if it exists, then it's not checkmate
-		print('king has legal move')
+		print('king has moves available: ', king.legal_tiles)
 		return false
 	else:
 		# Find attacking piece(s)
 		var attacker = king.get_attacker()
 		# If more than 2 pieces have king in check, then it's mate
 		if attacker.size() == 1:
-			var p_set = get_tree().get_nodes_in_group(king.team)
+			var blocks = get_attacking_tiles(king, attacker[0])
 			for t in p_set:
 				if is_attacking(t,attacker[0].current_tile):
 					# this is when the checking piece can be captured
 					print('attacker can be captured')
 					return false
-			var blocks = get_attacking_tiles(king, attacker[0])
-			for p in p_set:
-				for b in blocks:
-					if b in p.attacks:
-						# this is when check can be blocked
-						print('attacker can be blocked')
-						return false
-	# If everything else completes without returning false, then it's checkmate
+				else:
+					for b in blocks:
+						if b in t.attacks:
+							# this is when check can be blocked
+							print('attacker can be blocked')
+							return false
+	# Alternative method?  Seems to intermittently break, not sure why.
+		var c:= 0
+		for p in p_set:
+			p.find_attacks()
+			p.get_legal_tiles(p.attacks)
+			var filt_att = _filter_attacks(p.legal_tiles,p)
+			if filt_att == []:
+				c += 1
+		if c == len(p_set):
+			print('Checkmate')
+			return true
+	# If nothing else completes without returning false, then it's checkmate
+	print('Checkmate')
 	return true
+	
 
 
 
@@ -191,7 +203,7 @@ func _on_tiles_off_signal(tile_list:Array) -> void:
 	
 
 
-# Done
+# Done. Do not change.
 func move_test(tile:Vector2) -> bool:
 	# Make sure tile is green
 	if Tiles.get_cellv(tile) == TileColor.GREEN:
@@ -200,7 +212,7 @@ func move_test(tile:Vector2) -> bool:
 		return false
 
 
-# Unfinished; does nothing
+# Done, except maybe some edge cases
 func castle_test(king: Piece) -> bool:
 	var Qrook = wrook_Q if king.team == 'white' else brook_Q
 	var Krook = wrook_K if king.team == 'white' else brook_K
@@ -246,7 +258,7 @@ func castle_test(king: Piece) -> bool:
 		else:
 			return false
 
-# Done
+# Done.  Do not change.
 func is_attacking(this_node:Piece, that_tile:Vector2) -> bool:
 	this_node.find_attacks()
 	if that_tile in this_node.attacks:
@@ -259,8 +271,9 @@ func is_attacking(this_node:Piece, that_tile:Vector2) -> bool:
 func get_attacking_tiles(king:Piece, attacker:Piece) -> Array:
 	var tile_list = []
 	var direc = king.current_tile - attacker.current_tile
-	# Hell begins here
+	
 	if direc.x == 0:
+		# .x = 0 when pieces are same column
 		if direc.y > 0:
 			for d in range(1,direc.y-1):
 				tile_list.append(king.current_tile + Vector2(0,d))
@@ -268,6 +281,7 @@ func get_attacking_tiles(king:Piece, attacker:Piece) -> Array:
 			for d in range(1,abs(direc.y)-1):
 				tile_list.append(king.current_tile - Vector2(0,d))
 	elif direc.y == 0:
+		# .y = 0 when pieces are same row
 		if direc.x > 0:
 			for d in range(1,direc.x-1):
 				tile_list.append(king.current_tile + Vector2(d,0))
@@ -275,14 +289,18 @@ func get_attacking_tiles(king:Piece, attacker:Piece) -> Array:
 			for d in range(1,abs(direc.x)-1):
 				tile_list.append(king.current_tile - Vector2(-d,0))
 	else:
+		# diagonal or knight attack
 		var D = direc.x + direc.y
+		# D positive when attacker is NW of king
 		if D > 0:
 			for d in range(1,D/2-1):
 				tile_list.append(king.current_tile + Vector2(d,d))
+		# D negative when attacker is SE of king
 		elif D < 0:
-			for d in range(1,-D/2-1):
-				tile_list.append(king.current_tile - Vector2(d,d))
+			for d in range(1,-D/2):
+				tile_list.append(king.current_tile + Vector2(d,d))
 		elif D == 0:
+			# D = 0 when NE or SW of king
 			if direc.x > direc.y:
 				for d in range(1,direc.x-1):
 					tile_list.append(king.current_tile + Vector2(d,-d))
@@ -292,18 +310,8 @@ func get_attacking_tiles(king:Piece, attacker:Piece) -> Array:
 	return tile_list
 
 
-
-# Done for local play
-func _on_board_updated(old_tile:Vector2, new_tile:Vector2, piece_id:int):
-	# Move the piece from old to new
-	board_state[old_tile.y][old_tile.x] = Globals.empty
-	board_state[new_tile.y][new_tile.x] = piece_id
-	# In networked play, the other player must have move animated also
-	# In player-vs-ai game, the AI move must be animated
-
-
-# Seems done
-func _on_attacks_received(attack_list:Array, piece:Piece):
+# This should correctly filter out moves which leave king in check
+func _filter_attacks(att_list: Array, piece: Piece) -> Array:
 	var safe_tiles:= []
 	if piece.piece_id != Globals.wK and piece.piece_id != Globals.bK:
 		# Take moveset and highlight ones which do not leave king in check
@@ -316,17 +324,35 @@ func _on_attacks_received(attack_list:Array, piece:Piece):
 		var test_state = board_state.duplicate(true)
 		# Remove piece from test state
 		test_state[piece.current_tile.y][piece.current_tile.x] = Globals.empty
-		for t in attack_list:
+		for t in att_list:
 			var temp_id = test_state[t.y][t.x]
 			test_state[t.y][t.x] = piece.piece_id
 			if !test_check(king.current_tile, test_state):
 				safe_tiles.append(t)
 			# restore test state before resuming loop
 			test_state[t.y][t.x] = temp_id
-	else: safe_tiles = attack_list
+	else:
+		safe_tiles = att_list
+	
+	return safe_tiles
+	
+
+# Done for local play
+func _on_board_updated(old_tile:Vector2, new_tile:Vector2, piece_id:int):
+	# Move the piece from old to new
+	board_state[old_tile.y][old_tile.x] = Globals.empty
+	board_state[new_tile.y][new_tile.x] = piece_id
+	# In networked play, the other player must have move animated also
+	# In player-vs-ai game, the AI move must be animated
+
+
+# Seems done
+func _on_attacks_received(attack_list:Array, piece:Piece):
+	# Filter out moves which leave king in check
+	var filtered_tiles = _filter_attacks(attack_list,piece)
 	# After filtering, highlight the appropriate tiles
-	piece.legal_tiles = safe_tiles
-	show_tiles(safe_tiles)
+	piece.legal_tiles = filtered_tiles
+	show_tiles(filtered_tiles)
 
 
 # Possibly finished for local play
@@ -342,7 +368,7 @@ func _on_team_changed(team:bool):
 	else:
 		king = bking
 		team_str = 'Blue'
-	if test_check(king.current_tile,board_state):
+	if test_check(king.current_tile, board_state):
 		# Test for checkmate, too
 		if _test_checkmate():
 			emit_signal("end_game")
@@ -357,7 +383,7 @@ func _on_team_changed(team:bool):
 		# Not in check, do nothing
 		king.in_check = false
 	
-	# Change teams
+	# Change active team
 	if team:
 		# Lock out Blue
 		_lock_pieces("blue")
@@ -381,9 +407,10 @@ func _on_team_changed(team:bool):
 # Done
 func _on_Pawn_converted(pawn: Piece):
 	swapping_pawn = pawn
+	# Pause everything except for the popup.
+	get_tree().paused = true
 	# Popup display for choosing new piece
 	$Control/PieceConversion.popup()
-	# Pause game while awaiting piece selection
 	
 
 
@@ -430,17 +457,52 @@ func _on_PieceConversion_id_pressed(id):
 		_:
 			$Control/PieceConversion.popup()
 	# Set position of new piece
-	new_piece.position = swapping_pawn.position
+	new_piece.position = Globals.tile_2_xy(swapping_pawn.current_tile)
 	# Delete pawn
 	swapping_pawn.queue_free()
 	# Add new piece to board
 	Tiles.add_child(new_piece)
 	# Update board state
 	board_state[new_piece.current_tile.y][new_piece.current_tile.x] = new_piece.piece_id
+	# Unpause tree
+	get_tree().paused = false
 	# Lock new piece as the turn may have passed before selection
 	var wrong_turn = 'blue' if Network.white_team else 'white'
 	_lock_pieces(wrong_turn)
-	
+
+
+
+
+# Probably has edge case issues
+func _on_CastleKing_pressed():
+	# Swap pieces on right.
+	var king = wking if Network.white_team else bking
+	var rook = wrook_K if Network.white_team else brook_K
+	var new_tile = king.current_tile
+	new_tile.x += 2
+	Network.animate_move(king,new_tile)
+	new_tile.x -= 1
+	Network.animate_move(rook,new_tile)
+	king.has_moved = true
+	rook.has_moved = true
+	king.has_castled = true
+	Network.pass_turn()
+
+# No actually THIS one probably has edge case issues
+func _on_CastleQueen_pressed():
+	# Swap pieces on left.
+	var king = wking if Network.white_team else bking
+	var rook = wrook_Q if Network.white_team else brook_Q
+	var new_tile = king.current_tile
+	new_tile.x -= 2
+	Network.animate_move(king,new_tile)
+	new_tile.x += 1
+	Network.animate_move(rook,new_tile)
+	king.has_moved = true
+	king.has_castled = true
+	rook.has_moved = true
+	Network.pass_turn()
+
 
 
 #--------------------------------------------------
@@ -457,33 +519,3 @@ func _on_Button_pressed():
 
 func _on_MenuButton_pressed():
 	print(board_state)
-
-
-
-func _on_CastleKing_pressed():
-	# Swap pieces on right.
-	var king = wking if Network.white_team else bking
-	var rook = wrook_K if Network.white_team else brook_K
-	var new_tile = king.current_tile
-	new_tile.x += 2
-	Network.animate_move(king,new_tile)
-	new_tile.x -= 1
-	Network.animate_move(rook,new_tile)
-	king.has_moved = true
-	rook.has_moved = true
-	king.has_castled = true
-	Network.pass_turn()
-
-func _on_CastleQueen_pressed():
-	# Swap pieces on left.
-	var king = wking if Network.white_team else bking
-	var rook = wrook_K if Network.white_team else brook_K
-	var new_tile = king.current_tile
-	new_tile.x -= 2
-	Network.animate_move(king,new_tile)
-	new_tile.x += 1
-	Network.animate_move(rook,new_tile)
-	king.has_moved = true
-	king.has_castled = true
-	rook.has_moved = true
-	Network.pass_turn()
