@@ -25,6 +25,10 @@ signal filter_attacks(list, node)
 #signal check_event(node, team)
 signal piece_selected
 signal piece_dropped
+onready var move_sound = $MoveSound
+onready var drop_sound = $DropSound
+onready var cap_sound = $CapSound
+onready var pick_sound = $PickSound
 
 
 func _ready():
@@ -34,12 +38,12 @@ func _ready():
 	# warning-ignore:return_value_discarded
 	connect("update_board",board,"_on_board_updated")
 	# warning-ignore:return_value_discarded
-	#connect("check_event",board,"_on_check_received")
-	# warning-ignore:return_value_discarded
 	connect("filter_attacks",board,"_on_attacks_received")
 	
 
-func find_attacks(_state:Array=board.board_state):
+
+
+func find_attacks(_state:Array = board.board_state):
 	pass
 
 
@@ -68,6 +72,7 @@ func vfx_off():
 func _on_InputArea_is_selected():
 	# Any graphical effects of picking up piece go here
 	vfx_on()
+	pick_sound.playing = true
 	emit_signal("piece_selected")
 
 
@@ -75,6 +80,7 @@ func _on_InputArea_released():
 	# Make sure location is a lit tile
 	var test_tile = Globals.xy_2_tile(get_global_mouse_position())
 	if board.move_test(test_tile):
+		
 		# Update current_tile
 		var prev_tile: = current_tile
 		current_tile = test_tile
@@ -87,12 +93,18 @@ func _on_InputArea_released():
 		var cap_area = pick_area.get_overlapping_areas()
 		if cap_area:
 			_on_Piece_captured(cap_area[0])
-		
+			cap_sound.playing = true
+		else:
+			move_sound.playing = true
 		emit_signal("update_board",prev_tile,current_tile,piece_id)
 		turn_complete = true
 		# Test if this attacks enemy king?
-	emit_signal("piece_dropped")
+	else:
+		drop_sound.playing = true
+	
+	
 	emit_signal("unshow_tiles",legal_tiles)
+	emit_signal("piece_dropped")
 	# Turn off graphical effects
 	vfx_off()
 	
