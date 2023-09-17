@@ -46,9 +46,6 @@ func _ready():
 	# warning-ignore:return_value_discarded
 	Network.connect("update_board",self,"_on_board_updated")
 	initialize_kings()
-	for col in range(0,8):
-		for row in range(3,5):
-			Network.ice_tiles.append(Vector2(col,row))
 	
 
 
