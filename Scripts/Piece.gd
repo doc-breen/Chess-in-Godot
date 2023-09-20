@@ -29,6 +29,7 @@ onready var move_sound = $MoveSound
 onready var drop_sound = $DropSound
 onready var cap_sound = $CapSound
 onready var pick_sound = $PickSound
+onready var particle_cloud = $CPUParticles2D
 
 
 func _ready():
@@ -62,11 +63,14 @@ func vfx_on():
 	light.enabled = true
 	# Height
 	z_index = 50
+	# Particles
+	particle_cloud.visible = true
 
 
 func vfx_off():
 	light.enabled = false
 	z_index = 0
+	particle_cloud.visible = false
 
 
 func _on_InputArea_is_selected():
