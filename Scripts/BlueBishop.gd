@@ -81,10 +81,7 @@ func _on_Piece_is_selected():
 	pass_legal_tiles(legal_tiles)
 
 
-# Untested
+# Done
 func _on_Piece_is_dropped():
-	# Test if this attacks enemy king
 	find_attacks(board.board_state)
-#	if board.wking.current_tile in attacks:
-#		emit_signal("check_event",self,enemy)
 		
