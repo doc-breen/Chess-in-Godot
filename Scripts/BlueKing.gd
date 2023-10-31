@@ -39,7 +39,7 @@ func find_attacks(_state:=board.board_state):
 
 
 # This function filters out tiles which would put king in check
-func get_legal_tiles(tiles: Array):
+func get_legal_tiles(tiles: Array = attacks):
 	legal_tiles = []
 	# Set current_tile empty for this
 	board.board_state[current_tile.y][current_tile.x] = Globals.empty
@@ -74,7 +74,7 @@ func get_legal_tiles(tiles: Array):
 	
 
 # So far so good
-func get_attacker() -> Piece:
+func get_attacker() -> Array:
 	var attacker = []
 	for p in get_tree().get_nodes_in_group(enemy):
 		if current_tile in p.attacks:
@@ -86,11 +86,10 @@ func get_attacker() -> Piece:
 func _on_Piece_is_selected() -> void:
 	find_attacks()
 	get_legal_tiles(attacks)
-	# First get the legal moves
 	pass_legal_tiles(legal_tiles)
 
 
-# Unfinished
+# Done
 func _on_Piece_is_dropped() -> void:
 	find_attacks()
-	# Kings can't check so what happens here?
+	get_legal_tiles(attacks)
