@@ -3,10 +3,11 @@ extends Node
 var white_team:= true
 signal team_change(team)
 signal update_board(old_tile,new_tile,piece_id)
+onready var rng = RandomNumberGenerator.new()
 
 
 func _ready():
-	pass
+	rng.randomize()
 
 remote func animate_move(piece_obj:Piece, tile:Vector2):
 	# Move piece from tile1 to tile2
@@ -27,8 +28,8 @@ func pass_turn():
 
 
 # Unfinished
-func on_game_over():
+func on_game_over(loser_team: String):
 	# Display UI element that indicates which team won
 	# The UI element itself can pause the scene tree
-	print('Checkmate')
+	print('Game Over. ',loser_team,' lost!)
 
