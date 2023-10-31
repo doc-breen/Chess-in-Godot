@@ -12,6 +12,7 @@ func _ready():
 	connect('piece_selected',self,"_on_Piece_is_selected")
 	add_to_group(team)
 	add_to_group('Pieces')
+	connect('piece_dropped',self,"_on_Piece_is_dropped")
 
 
 func find_attacks(state:= board.board_state):
@@ -58,7 +59,7 @@ func find_attacks(state:= board.board_state):
 			break
 		else: break
 	
-
+# Done
 func _on_Piece_is_selected():
 	find_attacks(board.board_state)
 	# First get the legal moves
@@ -66,9 +67,9 @@ func _on_Piece_is_selected():
 	pass_legal_tiles(legal_tiles)
 
 
-# Unfinished
+# Done
 func _on_Piece_is_dropped():
 	# Test if this attacks enemy king
 	find_attacks()
+	get_legal_tiles()
 
-#
