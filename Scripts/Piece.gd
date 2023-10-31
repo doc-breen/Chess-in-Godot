@@ -29,7 +29,7 @@ onready var move_sound = $MoveSound
 onready var drop_sound = $DropSound
 onready var cap_sound = $CapSound
 onready var pick_sound = $PickSound
-onready var particle_cloud = $CPUParticles2D
+onready var particle_cloud = $ParticleCloud
 
 
 func _ready():
@@ -49,7 +49,7 @@ func find_attacks(_state:Array = board.board_state):
 
 
 # Default behavior for easy pieces like Rook
-func get_legal_tiles(tiles:Array):
+func get_legal_tiles(tiles:Array = attacks):
 	legal_tiles = tiles
 
 
