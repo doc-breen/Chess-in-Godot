@@ -35,8 +35,8 @@ func find_attacks(state:= board.board_state):
 	else: attacks = []
 
 
-# Works for now
-func get_legal_tiles(tiles):
+# Works well
+func get_legal_tiles(tiles: Array = attacks):
 	# Just check that attack isn't occupied by teammate
 	legal_tiles = tiles.duplicate(true)
 	var good_tiles = []
@@ -46,15 +46,14 @@ func get_legal_tiles(tiles):
 			
 	legal_tiles = good_tiles
 
-
+# Done
 func _on_Piece_is_selected():
 	find_attacks(board.board_state)
 	get_legal_tiles(attacks)
 	# First get the legal moves
 	pass_legal_tiles(legal_tiles)
 
-# Untested
+# Done
 func _on_Piece_is_dropped():
-	# Test if this attacks enemy king
 	find_attacks(board.board_state)
 
