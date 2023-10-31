@@ -13,6 +13,7 @@ func _ready():
 	connect("piece_dropped",self,'_on_Piece_is_dropped')
 	add_to_group(team)
 	add_to_group('Pieces')
+	particle_cloud.modulate = Color('1d53c2')
 
 # Done
 func find_attacks(state:= board.board_state):
