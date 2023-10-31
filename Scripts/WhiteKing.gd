@@ -18,6 +18,7 @@ func _ready():
 	connect('piece_dropped',self,"_on_Piece_is_dropped")
 	add_to_group(team)
 	add_to_group('Pieces')
+	particle_cloud.modulate = Color('1d53c2')
 
 
 # Done
@@ -81,7 +82,7 @@ func _on_Piece_is_selected():
 	pass_legal_tiles(legal_tiles)
 
 
-# Untested
+# Done
 func get_attacker():
 	var attacker = []
 	for p in get_tree().get_nodes_in_group(enemy):
@@ -90,7 +91,7 @@ func get_attacker():
 	return attacker
 
 
-# Unfinished
+# Done
 func _on_Piece_is_dropped():
 	find_attacks(board.board_state)
-	# Kings can't check so what happens here?
+	get_legal_tiles(attacks)
