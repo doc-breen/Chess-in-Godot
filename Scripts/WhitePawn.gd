@@ -17,6 +17,7 @@ func _ready():
 	add_to_group('Pieces')
 	# warning-ignore:return_value_discarded
 	connect("convert_pawn",board,"_on_Pawn_converted")
+	particle_cloud.modulate = Color('1d53c2')
 
 
 # Done
