@@ -1,0 +1,25 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type canvas_item;
+
+uniform sampler2D noise_img;
+uniform vec2 tiled_factor = vec2(1.0, 1.5);
+uniform float aspect_ratio = 0.6;
+uniform vec2 offset_scale = vec2(1.5, 1.5);
+uniform vec2 amplitude = vec2(0.05, 0.01);
+uniform vec4 smoke_color : hint_color;
+
+void fragment() {
+	vec2 tiled_uvs = UV * tiled_factor;
+	tiled_uvs.y *= aspect_ratio;
+	
+	vec2 waves_uv_offset;
+	waves_uv_offset.x = cos(TIME + (tiled_uvs.x + tiled_uvs.y) * offset_scale.x); 
+	waves_uv_offset.y = sin(TIME + (tiled_uvs.x + tiled_uvs.y) * offset_scale.y);
+	
+	COLOR = texture(noise_img, tiled_uvs + waves_uv_offset * amplitude);
+	COLOR.g = smoke_color.r*cos(TIME/3.0);
+	COLOR.b = smoke_color.g*2.0*sin(TIME);
+
+}"
